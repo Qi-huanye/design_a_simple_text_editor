@@ -24,7 +24,7 @@ void textEditor::run() {
     }
 
     if (cmd == "help") {
-      std::cout << "Available commands: help, quit, show, new, insert, delete, edit, save"
+      std::cout << "Available commands: help, quit, show, new, insert, delete, edit, save, open"
                 << std::endl;
 
     } else if (cmd == "quit") {
@@ -66,6 +66,13 @@ void textEditor::run() {
         continue;
       }
       save(fileName);
+
+    } else if (cmd == "open") {
+      if (!(iss >> fileName)) {
+        std::cout << "Please input a correct filename" << std::endl;
+        continue;
+      }
+      open(fileName);
 
     } else {
       std::cout << "Unknown command" << std::endl;
@@ -130,4 +137,21 @@ void textEditor::save(const std::string& fileName) {
   }
 
   std::cout << "Save to " << fileName << std::endl;
+}
+
+void textEditor::open(const std::string& fileName) {
+  std::ifstream fin(fileName);
+  if (!fin) {
+    std::cout << "Cannot open file" << std::endl;
+    return;
+  }
+
+  file.clear();
+
+  std::string line;
+  while (std::getline(fin, line)) {
+    file.push_back(line);
+  }
+
+  std::cout << "Opened the " << fileName << std::endl;
 }

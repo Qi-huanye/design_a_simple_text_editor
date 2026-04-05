@@ -13,6 +13,7 @@ public:
   void deleteLine(const int& lineNum);
   void edit(const int& lineNum, const std::string& context);
   void save(const std::string& fileName);
+  void open(const std::string& fileName);
 
 private:
   std::vector<std::string> file;
