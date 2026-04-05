@@ -11,6 +11,7 @@ public:
   void show();
   void insert(const int& lineNum, const std::string& context);
   void deleteLine(const int& lineNum);
+  void edit(const int& lineNum, const std::string& context);
 
 private:
   std::vector<std::string> file;

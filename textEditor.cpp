@@ -21,7 +21,7 @@ void textEditor::run() {
     }
 
     if (cmd == "help") {
-      std::cout << "Available commands: help, quit, show, new, insert, delete" << std::endl;
+      std::cout << "Available commands: help, quit, show, new, insert, delete, edit" << std::endl;
     } else if (cmd == "quit") {
       std::cout << "Goodbye!" << std::endl;
       break;
@@ -45,6 +45,13 @@ void textEditor::run() {
       }
 
       deleteLine(lineNum);
+    } else if (cmd == "edit") {
+      if (!(iss >> lineNum)) {
+        std::cout << "Please input correct line number" << std::endl;
+        continue;
+      }
+      std::getline(iss >> std::ws, context);
+      edit(lineNum, context);
     } else {
       std::cout << "Unknown command" << std::endl;
     }
@@ -85,4 +92,14 @@ void textEditor::deleteLine(const int& lineNum) {
 
   size_t index = lineNum - 1;
   file.erase(file.begin() + index);
+}
+
+void textEditor::edit(const int& lineNum, const std::string& context) {
+  if (lineNum < 1 || lineNum > file.size()) {
+    std::cout << "You can not edit here" << std::endl;
+    return;
+  }
+
+  size_t index = lineNum - 1;
+  file[index] = context;
 }
