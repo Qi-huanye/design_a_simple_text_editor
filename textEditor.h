@@ -19,6 +19,7 @@ public:
 private:
   std::vector<std::string> file;
   std::string currentFileName = "";
+  bool modified = false;
 };
 
 #endif

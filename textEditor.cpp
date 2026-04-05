@@ -24,10 +24,17 @@ void textEditor::run() {
     }
 
     if (cmd == "help") {
-      std::cout << "Available commands: help, quit, show, new, insert, delete, edit, saveas, open, save"
-                << std::endl;
+      std::cout
+          << "Available commands: help, quit, show, new, insert, delete, edit, saveas, open, save"
+          << std::endl;
 
     } else if (cmd == "quit") {
+
+      if (modified) {
+        std::cout << "You have unsaved changes" << std::endl;
+
+        continue;
+      }
       std::cout << "Goodbye!" << std::endl;
       break;
 
@@ -86,6 +93,8 @@ void textEditor::newFile() {
   file.clear();
   currentFileName.clear();
   std::cout << "New file created" << std::endl;
+
+  modified = false;
 }
 
 void textEditor::show() {
@@ -107,6 +116,8 @@ void textEditor::insert(const int& lineNum, const std::string& context) {
 
   size_t index = lineNum - 1;
   file.insert(file.begin() + index, context);
+
+  modified = true;
 }
 
 void textEditor::deleteLine(const int& lineNum) {
@@ -117,6 +128,8 @@ void textEditor::deleteLine(const int& lineNum) {
 
   size_t index = lineNum - 1;
   file.erase(file.begin() + index);
+
+  modified = true;
 }
 
 void textEditor::edit(const int& lineNum, const std::string& context) {
@@ -127,6 +140,8 @@ void textEditor::edit(const int& lineNum, const std::string& context) {
 
   size_t index = lineNum - 1;
   file[index] = context;
+
+  modified = true;
 }
 
 void textEditor::saveas(const std::string& fileName) {
@@ -140,6 +155,8 @@ void textEditor::saveas(const std::string& fileName) {
   }
   currentFileName = fileName;
   std::cout << "Save to " << fileName << std::endl;
+
+  modified = false;
 }
 
 void textEditor::open(const std::string& fileName) {
@@ -157,13 +174,14 @@ void textEditor::open(const std::string& fileName) {
   }
   currentFileName = fileName;
   std::cout << "Opened the " << fileName << std::endl;
+
+  modified = false;
 }
 
 void textEditor::save() {
   if (currentFileName.empty()) {
     std::cout << "Please open a file or use saveas to save as a new file" << std::endl;
     return;
-  } else {
-    saveas(currentFileName);
   }
+  saveas(currentFileName);
 }
