@@ -25,7 +25,7 @@ void textEditor::run() {
 
     if (cmd == "help") {
       std::cout << "Available commands: help, quit, show, new, insert, delete, edit, saveas, open, "
-                   "save, status"
+                   "save, status, find"
                 << std::endl;
 
     } else if (cmd == "quit") {
@@ -91,6 +91,13 @@ void textEditor::run() {
       save();
     } else if (cmd == "status") {
       status();
+    } else if (cmd == "find") {
+      std::string findString;
+      if (!(std::getline(iss >> std::ws, findString))) {
+        std::cout << "Please input correct string" << std::endl;
+        continue;
+      }
+      find(findString);
     } else {
       std::cout << "Unknown command" << std::endl;
     }
@@ -197,6 +204,8 @@ void textEditor::save() {
 void textEditor::status() {
   if (currentFileName.empty()) {
     std::cout << "Unamed File" << std::endl;
+  } else {
+    std::cout << currentFileName << std::endl;
   }
 
   if (modified) {
@@ -206,4 +215,14 @@ void textEditor::status() {
   }
 
   std::cout << "Total lines: " << file.size() << std::endl;
+}
+
+void textEditor::find(const std::string& findString) {
+  int lineNum = 1;
+  for (const std::string& line : file) {
+    if (line.find(findString) != std::string::npos) {
+      std::cout << lineNum << ":" << line << std::endl;
+    }
+    lineNum++;
+  }
 }

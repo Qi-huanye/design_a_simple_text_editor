@@ -16,6 +16,7 @@ public:
   void save();
   void open(const std::string& fileName);
   void status();
+  void find(const std::string& findString);
 
 private:
   std::vector<std::string> file;
