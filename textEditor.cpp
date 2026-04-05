@@ -7,19 +7,21 @@
 void textEditor::run() {
   std::cout << "Simple Text Editor" << std::endl;
   std::cout << "Type help to see commands." << std::endl;
-  std::string command;
-  int lineNum;
-  std::string cmd;
-  std::string context;
 
   while (true) {
+    int lineNum;
+    std::string command;
+    std::string cmd;
+    std::string context;
     std::cout << "\n> ";
     std::getline(std::cin, command);
     std::istringstream iss(command);
-    iss >> cmd;
+    if (!(iss >> cmd)) {
+      continue;
+    }
 
     if (cmd == "help") {
-      std::cout << "Available commands: help, quit, show, new, insert" << std::endl;
+      std::cout << "Available commands: help, quit, show, new, insert, delete" << std::endl;
     } else if (cmd == "quit") {
       std::cout << "Goodbye!" << std::endl;
       break;
@@ -30,12 +32,19 @@ void textEditor::run() {
     } else if (cmd == "show") {
       show();
     } else if (cmd == "insert") {
-      if(!(iss >> lineNum)){
+      if (!(iss >> lineNum)) {
         std::cout << "Please input correct line number" << std::endl;
         continue;
       }
       std::getline(iss >> std::ws, context);
       insert(lineNum, context);
+    } else if (cmd == "delete") {
+      if (!(iss >> lineNum)) {
+        std::cout << "Please input correct line number" << std::endl;
+        continue;
+      }
+
+      deleteLine(lineNum);
     } else {
       std::cout << "Unknown command" << std::endl;
     }
@@ -66,4 +75,14 @@ void textEditor::insert(const int& lineNum, const std::string& context) {
 
   size_t index = lineNum - 1;
   file.insert(file.begin() + index, context);
+}
+
+void textEditor::deleteLine(const int& lineNum) {
+  if (lineNum < 1 || lineNum > file.size()) {
+    std::cout << "You can not delete this line" << std::endl;
+    return;
+  }
+
+  size_t index = lineNum - 1;
+  file.erase(file.begin() + index);
 }

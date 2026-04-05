@@ -10,6 +10,7 @@ public:
   void newFile();
   void show();
   void insert(const int& lineNum, const std::string& context);
+  void deleteLine(const int& lineNum);
 
 private:
   std::vector<std::string> file;
