@@ -20,6 +20,13 @@ public:
   void replace(const std::string& oldText, const std::string& newText);
 
 private:
+  void handleInsert(std::istringstream& iss);
+  void handleDelete(std::istringstream& iss);
+  void handleEdit(std::istringstream& iss);
+  void handleOpen(std::istringstream& iss);
+  void handleSaveAs(std::istringstream& iss);
+  void handleFind(std::istringstream& iss);
+  void handleReplace(std::istringstream& iss);
   bool findFile(const std::vector<std::string>& file, const std::string& findString);
   std::vector<std::string> file;
   std::string currentFileName = "";

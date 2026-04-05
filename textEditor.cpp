@@ -10,11 +10,8 @@ void textEditor::run() {
   std::cout << "Type help to see commands." << std::endl;
 
   while (true) {
-    int lineNum;
     std::string command;
     std::string cmd;
-    std::string context;
-    std::string fileName;
     std::cout << "\n> ";
     std::getline(std::cin, command);
     std::istringstream iss(command);
@@ -45,81 +42,24 @@ void textEditor::run() {
 
     } else if (cmd == "show") {
       show();
-
     } else if (cmd == "insert") {
-      if (!(iss >> lineNum)) {
-        std::cout << "Please input correct line number" << std::endl;
-        continue;
-      }
-      std::getline(iss >> std::ws, context);
-      insert(lineNum, context);
-
+      handleInsert(iss);
     } else if (cmd == "delete") {
-      if (!(iss >> lineNum)) {
-        std::cout << "Please input correct line number" << std::endl;
-        continue;
-      }
-      deleteLine(lineNum);
-
+      handleDelete(iss);
     } else if (cmd == "edit") {
-      if (!(iss >> lineNum)) {
-        std::cout << "Please input correct line number" << std::endl;
-        continue;
-      }
-      std::getline(iss >> std::ws, context);
-      edit(lineNum, context);
-
+      handleEdit(iss);
     } else if (cmd == "saveas") {
-      if (!(iss >> fileName)) {
-        std::cout << "Please input a correct filename" << std::endl;
-        continue;
-      }
-      saveas(fileName);
-
+      handleSaveAs(iss);
     } else if (cmd == "open") {
-      if (modified) {
-        std::cout << "You have unsaved changes" << std::endl;
-        continue;
-      }
-      if (!(iss >> fileName)) {
-        std::cout << "Please input a correct filename" << std::endl;
-        continue;
-      }
-      open(fileName);
-
+      handleOpen(iss);
     } else if (cmd == "save") {
       save();
     } else if (cmd == "status") {
       status();
     } else if (cmd == "find") {
-      std::string findString;
-      if (!(std::getline(iss >> std::ws, findString))) {
-        std::cout << "Please input correct string" << std::endl;
-        continue;
-      }
-      if (!(findFile(file, findString))) {
-        std::cout << "Dont find the string" << std::endl;
-        continue;
-      }
-      find(findString);
+      handleFind(iss);
     } else if (cmd == "replace") {
-      std::string oldText, newText;
-      if (!(iss >> oldText)) {
-        std::cout << "Please input correct to be replaced string" << std::endl;
-        continue;
-      }
-
-      if (!(iss >> newText)) {
-        std::cout << "Please input correct replaced string" << std::endl;
-        continue;
-      }
-
-      if (!(findFile(file, oldText))) {
-        std::cout << "Dont find the to be replaced string" << std::endl;
-        continue;
-      }
-
-      replace(oldText, newText);
+      handleReplace(iss);
     } else {
       std::cout << "Unknown command" << std::endl;
     }
@@ -270,4 +210,90 @@ void textEditor::replace(const std::string& oldText, const std::string& newText)
       modified = true;
     }
   }
+}
+
+void textEditor::handleInsert(std::istringstream& iss) {
+  std::string context;
+  int lineNum;
+  if (!(iss >> lineNum)) {
+    std::cout << "Please input correct line number" << std::endl;
+    return;
+  }
+  std::getline(iss >> std::ws, context);
+  insert(lineNum, context);
+}
+
+void textEditor::handleDelete(std::istringstream& iss) {
+  int lineNum;
+  if (!(iss >> lineNum)) {
+    std::cout << "Please input correct line number" << std::endl;
+    return;
+  }
+  deleteLine(lineNum);
+}
+
+void textEditor::handleEdit(std::istringstream& iss) {
+  std::string context;
+  int lineNum;
+  if (!(iss >> lineNum)) {
+    std::cout << "Please input correct line number" << std::endl;
+    return;
+  }
+  std::getline(iss >> std::ws, context);
+  edit(lineNum, context);
+}
+
+void textEditor::handleOpen(std::istringstream& iss) {
+  std::string fileName;
+  if (modified) {
+    std::cout << "You have unsaved changes" << std::endl;
+    return;
+  }
+  if (!(iss >> fileName)) {
+    std::cout << "Please input a correct filename" << std::endl;
+    return;
+  }
+  open(fileName);
+}
+
+void textEditor::handleSaveAs(std::istringstream& iss) {
+  std::string fileName;
+  if (!(iss >> fileName)) {
+    std::cout << "Please input a correct filename" << std::endl;
+    return;
+  }
+  saveas(fileName);
+}
+
+void textEditor::handleReplace(std::istringstream& iss) {
+  std::string oldText, newText;
+  if (!(iss >> oldText)) {
+    std::cout << "Please input correct to be replaced string" << std::endl;
+    return;
+  }
+
+  if (!(iss >> newText)) {
+    std::cout << "Please input correct replaced string" << std::endl;
+    return;
+  }
+
+  if (!(findFile(file, oldText))) {
+    std::cout << "Dont find the to be replaced string" << std::endl;
+    return;
+  }
+
+  replace(oldText, newText);
+}
+
+void textEditor::handleFind(std::istringstream& iss) {
+  std::string findString;
+  if (!(std::getline(iss >> std::ws, findString))) {
+    std::cout << "Please input correct string" << std::endl;
+    return;
+  }
+  if (!(findFile(file, findString))) {
+    std::cout << "Dont find the string" << std::endl;
+    return;
+  }
+  find(findString);
 }
