@@ -1,4 +1,5 @@
 #include "textEditor.h"
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -13,24 +14,29 @@ void textEditor::run() {
     std::string command;
     std::string cmd;
     std::string context;
+    std::string fileName;
     std::cout << "\n> ";
     std::getline(std::cin, command);
     std::istringstream iss(command);
+
     if (!(iss >> cmd)) {
       continue;
     }
 
     if (cmd == "help") {
-      std::cout << "Available commands: help, quit, show, new, insert, delete, edit" << std::endl;
+      std::cout << "Available commands: help, quit, show, new, insert, delete, edit, save"
+                << std::endl;
+
     } else if (cmd == "quit") {
       std::cout << "Goodbye!" << std::endl;
       break;
-    } else if (cmd.empty()) {
-      continue;
+
     } else if (cmd == "new") {
       newFile();
+
     } else if (cmd == "show") {
       show();
+
     } else if (cmd == "insert") {
       if (!(iss >> lineNum)) {
         std::cout << "Please input correct line number" << std::endl;
@@ -38,13 +44,14 @@ void textEditor::run() {
       }
       std::getline(iss >> std::ws, context);
       insert(lineNum, context);
+
     } else if (cmd == "delete") {
       if (!(iss >> lineNum)) {
         std::cout << "Please input correct line number" << std::endl;
         continue;
       }
-
       deleteLine(lineNum);
+
     } else if (cmd == "edit") {
       if (!(iss >> lineNum)) {
         std::cout << "Please input correct line number" << std::endl;
@@ -52,6 +59,14 @@ void textEditor::run() {
       }
       std::getline(iss >> std::ws, context);
       edit(lineNum, context);
+
+    } else if (cmd == "save") {
+      if (!(iss >> fileName)) {
+        std::cout << "Please input a correct filename" << std::endl;
+        continue;
+      }
+      save(fileName);
+
     } else {
       std::cout << "Unknown command" << std::endl;
     }
@@ -102,4 +117,17 @@ void textEditor::edit(const int& lineNum, const std::string& context) {
 
   size_t index = lineNum - 1;
   file[index] = context;
+}
+
+void textEditor::save(const std::string& fileName) {
+  std::ofstream fout(fileName);
+  if (!fout) {
+    std::cout << "Cannot open file" << std::endl;
+    return;
+  }
+  for (const std::string& line : file) {
+    fout << line << std::endl;
+  }
+
+  std::cout << "Save to " << fileName << std::endl;
 }
