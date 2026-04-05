@@ -21,10 +21,7 @@ void textEditor::run() {
     }
 
     if (cmd == "help") {
-      std::cout << "Available commands: help, quit, show, new, insert, delete, edit, saveas, open, "
-                   "save, status, find, replace"
-                << std::endl;
-
+      showHelp();
     } else if (cmd == "quit") {
       if (modified) {
         std::cout << "You have unsaved changes" << std::endl;
@@ -296,4 +293,11 @@ void textEditor::handleFind(std::istringstream& iss) {
     return;
   }
   find(findString);
+}
+
+void showHelp() {
+  std::cout << "Available commands:" << std::endl;
+  std::cout << "basic commands: help, quit, status" << std::endl; 
+  std::cout << "file commands: new, open, save, saveas" << std::endl;
+  std::cout << "edit commands: show, insert, delete, edit.find, replace" << std::endl;
 }

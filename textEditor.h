@@ -27,6 +27,7 @@ private:
   void handleSaveAs(std::istringstream& iss);
   void handleFind(std::istringstream& iss);
   void handleReplace(std::istringstream& iss);
+  void showHelp();
   bool findFile(const std::vector<std::string>& file, const std::string& findString);
   std::vector<std::string> file;
   std::string currentFileName = "";
