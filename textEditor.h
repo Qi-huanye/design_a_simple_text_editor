@@ -9,6 +9,7 @@ public:
   void run();
   void newFile();
   void show();
+  void insert(const int& lineNum, const std::string& context);
 
 private:
   std::vector<std::string> file;
