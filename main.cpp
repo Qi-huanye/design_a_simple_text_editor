@@ -1,7 +1,8 @@
-#include "textEditor.h"
+#include "editorWindow.h"
+#include <FL/Fl.H>
 
 int main(){
-  textEditor editor;
-  editor.run();
-  return 0;
+  EditorWindow win = {800, 800, "Text Editor"};
+  win.show();
+  return Fl::run();
 }

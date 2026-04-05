@@ -7,8 +7,6 @@
 class textEditor {
 public:
   void run();
-
-private:
   void newFile();
   void show();
   void insert(const int& lineNum, const std::string& context);
@@ -20,6 +18,8 @@ private:
   void status();
   void find(const std::string& findString);
   void replace(const std::string& oldText, const std::string& newText);
+
+private:
   void handleInsert(std::istringstream& iss);
   void handleDelete(std::istringstream& iss);
   void handleEdit(std::istringstream& iss);
