@@ -1,0 +1,21 @@
+# 可执行文件
+text_editor
+
+# CMake 构建目录
+build/
+
+# CMake 生成的文件
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+compile_commands.json
+
+# 临时文件
+*.o
+*.out
+*.swp
+
+# VSCode 本地配置（可选）
+.vscode/
+.codex
