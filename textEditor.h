@@ -15,6 +15,7 @@ public:
   void saveas(const std::string& fileName);
   void save();
   void open(const std::string& fileName);
+  void status();
 
 private:
   std::vector<std::string> file;

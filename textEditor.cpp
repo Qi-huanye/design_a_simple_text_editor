@@ -24,9 +24,9 @@ void textEditor::run() {
     }
 
     if (cmd == "help") {
-      std::cout
-          << "Available commands: help, quit, show, new, insert, delete, edit, saveas, open, save"
-          << std::endl;
+      std::cout << "Available commands: help, quit, show, new, insert, delete, edit, saveas, open, "
+                   "save, status"
+                << std::endl;
 
     } else if (cmd == "quit") {
       if (modified) {
@@ -89,6 +89,8 @@ void textEditor::run() {
 
     } else if (cmd == "save") {
       save();
+    } else if (cmd == "status") {
+      status();
     } else {
       std::cout << "Unknown command" << std::endl;
     }
@@ -190,4 +192,18 @@ void textEditor::save() {
     return;
   }
   saveas(currentFileName);
+}
+
+void textEditor::status() {
+  if (currentFileName.empty()) {
+    std::cout << "Unamed File" << std::endl;
+  }
+
+  if (modified) {
+    std::cout << "Unsaved File" << std::endl;
+  } else {
+    std::cout << "Saved File" << std::endl;
+  }
+
+  std::cout << "Total lines: " << file.size() << std::endl;
 }
