@@ -12,11 +12,13 @@ public:
   void insert(const int& lineNum, const std::string& context);
   void deleteLine(const int& lineNum);
   void edit(const int& lineNum, const std::string& context);
-  void save(const std::string& fileName);
+  void saveas(const std::string& fileName);
+  void save();
   void open(const std::string& fileName);
 
 private:
   std::vector<std::string> file;
+  std::string currentFileName = "";
 };
 
 #endif

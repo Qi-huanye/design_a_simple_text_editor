@@ -24,7 +24,7 @@ void textEditor::run() {
     }
 
     if (cmd == "help") {
-      std::cout << "Available commands: help, quit, show, new, insert, delete, edit, save, open"
+      std::cout << "Available commands: help, quit, show, new, insert, delete, edit, saveas, open, save"
                 << std::endl;
 
     } else if (cmd == "quit") {
@@ -60,12 +60,12 @@ void textEditor::run() {
       std::getline(iss >> std::ws, context);
       edit(lineNum, context);
 
-    } else if (cmd == "save") {
+    } else if (cmd == "saveas") {
       if (!(iss >> fileName)) {
         std::cout << "Please input a correct filename" << std::endl;
         continue;
       }
-      save(fileName);
+      saveas(fileName);
 
     } else if (cmd == "open") {
       if (!(iss >> fileName)) {
@@ -74,6 +74,8 @@ void textEditor::run() {
       }
       open(fileName);
 
+    } else if (cmd == "save") {
+      save();
     } else {
       std::cout << "Unknown command" << std::endl;
     }
@@ -82,6 +84,7 @@ void textEditor::run() {
 
 void textEditor::newFile() {
   file.clear();
+  currentFileName.clear();
   std::cout << "New file created" << std::endl;
 }
 
@@ -126,7 +129,7 @@ void textEditor::edit(const int& lineNum, const std::string& context) {
   file[index] = context;
 }
 
-void textEditor::save(const std::string& fileName) {
+void textEditor::saveas(const std::string& fileName) {
   std::ofstream fout(fileName);
   if (!fout) {
     std::cout << "Cannot open file" << std::endl;
@@ -135,7 +138,7 @@ void textEditor::save(const std::string& fileName) {
   for (const std::string& line : file) {
     fout << line << std::endl;
   }
-
+  currentFileName = fileName;
   std::cout << "Save to " << fileName << std::endl;
 }
 
@@ -152,6 +155,15 @@ void textEditor::open(const std::string& fileName) {
   while (std::getline(fin, line)) {
     file.push_back(line);
   }
-
+  currentFileName = fileName;
   std::cout << "Opened the " << fileName << std::endl;
+}
+
+void textEditor::save() {
+  if (currentFileName.empty()) {
+    std::cout << "Please open a file or use saveas to save as a new file" << std::endl;
+    return;
+  } else {
+    saveas(currentFileName);
+  }
 }
