@@ -29,16 +29,18 @@ void textEditor::run() {
           << std::endl;
 
     } else if (cmd == "quit") {
-
       if (modified) {
         std::cout << "You have unsaved changes" << std::endl;
-
         continue;
       }
       std::cout << "Goodbye!" << std::endl;
       break;
 
     } else if (cmd == "new") {
+      if (modified) {
+        std::cout << "You have unsaved changes" << std::endl;
+        continue;
+      }
       newFile();
 
     } else if (cmd == "show") {
@@ -75,6 +77,10 @@ void textEditor::run() {
       saveas(fileName);
 
     } else if (cmd == "open") {
+      if (modified) {
+        std::cout << "You have unsaved changes" << std::endl;
+        continue;
+      }
       if (!(iss >> fileName)) {
         std::cout << "Please input a correct filename" << std::endl;
         continue;
