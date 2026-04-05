@@ -25,7 +25,7 @@ void textEditor::run() {
 
     if (cmd == "help") {
       std::cout << "Available commands: help, quit, show, new, insert, delete, edit, saveas, open, "
-                   "save, status, find"
+                   "save, status, find, replace"
                 << std::endl;
 
     } else if (cmd == "quit") {
@@ -97,7 +97,29 @@ void textEditor::run() {
         std::cout << "Please input correct string" << std::endl;
         continue;
       }
+      if (!(findFile(file, findString))) {
+        std::cout << "Dont find the string" << std::endl;
+        continue;
+      }
       find(findString);
+    } else if (cmd == "replace") {
+      std::string oldText, newText;
+      if (!(iss >> oldText)) {
+        std::cout << "Please input correct to be replaced string" << std::endl;
+        continue;
+      }
+
+      if (!(iss >> newText)) {
+        std::cout << "Please input correct replaced string" << std::endl;
+        continue;
+      }
+
+      if (!(findFile(file, oldText))) {
+        std::cout << "Dont find the to be replaced string" << std::endl;
+        continue;
+      }
+
+      replace(oldText, newText);
     } else {
       std::cout << "Unknown command" << std::endl;
     }
@@ -203,7 +225,7 @@ void textEditor::save() {
 
 void textEditor::status() {
   if (currentFileName.empty()) {
-    std::cout << "Unamed File" << std::endl;
+    std::cout << "Unnamed File" << std::endl;
   } else {
     std::cout << currentFileName << std::endl;
   }
@@ -224,5 +246,28 @@ void textEditor::find(const std::string& findString) {
       std::cout << lineNum << ":" << line << std::endl;
     }
     lineNum++;
+  }
+}
+
+bool textEditor::findFile(const std::vector<std::string>& file, const std::string& findString) {
+  bool isFind = false;
+  for (const std::string& line : file) {
+    if (line.find(findString) != std::string::npos) {
+      isFind = true;
+      return isFind;
+    }
+  }
+  return isFind;
+}
+
+void textEditor::replace(const std::string& oldText, const std::string& newText) {
+  for (size_t i = 0; i < file.size(); i++) {
+    std::string& line = file[i];
+    size_t position = line.find(oldText);
+    while (position != std::string::npos) {
+      line.replace(position, oldText.length(), newText);
+      position = line.find(oldText, position + newText.length());
+      modified = true;
+    }
   }
 }

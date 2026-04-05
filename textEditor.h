@@ -17,8 +17,10 @@ public:
   void open(const std::string& fileName);
   void status();
   void find(const std::string& findString);
+  void replace(const std::string& oldText, const std::string& newText);
 
 private:
+  bool findFile(const std::vector<std::string>& file, const std::string& findString);
   std::vector<std::string> file;
   std::string currentFileName = "";
   bool modified = false;
