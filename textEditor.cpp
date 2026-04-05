@@ -295,9 +295,9 @@ void textEditor::handleFind(std::istringstream& iss) {
   find(findString);
 }
 
-void showHelp() {
+void textEditor::showHelp() {
   std::cout << "Available commands:" << std::endl;
-  std::cout << "basic commands: help, quit, status" << std::endl; 
+  std::cout << "basic commands: help, quit, status" << std::endl;
   std::cout << "file commands: new, open, save, saveas" << std::endl;
-  std::cout << "edit commands: show, insert, delete, edit.find, replace" << std::endl;
+  std::cout << "edit commands: show, insert, delete, edit,find, replace" << std::endl;
 }
