@@ -35,6 +35,7 @@ private:
   void deleteCurrentLine();
   void toggleLineNumbers();
   void toggleWordWrap();
+  void toggleMatchCase();
   int lineCount() const;
   int currentLineNumber() const;
   int currentColumnNumber() const;
@@ -56,6 +57,7 @@ private:
   static void DeleteCurrentLine(Fl_Widget*, void*);
   static void ToggleLineNumbers(Fl_Widget*, void*);
   static void ToggleWordWrap(Fl_Widget*, void*);
+  static void ToggleMatchCase(Fl_Widget*, void*);
   static void Find(Fl_Widget*, void*);
   static void FindNext(Fl_Widget*, void*);
   static void FindPrevious(Fl_Widget*, void*);
@@ -69,6 +71,7 @@ private:
   std::string lastFindString;
   bool lineNumbersEnabled = true;
   bool wordWrapEnabled = false;
+  bool matchCaseEnabled = false;
   bool modified = false;
 };
 

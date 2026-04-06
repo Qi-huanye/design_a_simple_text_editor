@@ -57,6 +57,7 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
   menuBar->add("Edit/Select All", FL_COMMAND + 'a', SelectAll, this);
   menuBar->add("Edit/Delete Current Line", FL_COMMAND + 'd', DeleteCurrentLine, this);
   menuBar->add("Edit/Go To Line", FL_COMMAND + 'g', GoToLine, this);
+  menuBar->add("Edit/Match Case", 0, ToggleMatchCase, this, FL_MENU_TOGGLE);
   menuBar->add("Edit/Find", FL_COMMAND + 'f', Find, this);
   menuBar->add("Edit/Find Next", 0, FindNext, this);
   menuBar->add("Edit/Find Previous", 0, FindPrevious, this);
@@ -229,6 +230,7 @@ void EditorWindow::updateStatusBar() {
   title += ", Col " + std::to_string(currentColumnNumber());
   title += " | Lines " + std::to_string(lineCount());
   title += ", Chars " + std::to_string(textBuffer.length());
+  title += matchCaseEnabled ? " | Match Case" : " | Ignore Case";
   title += wordWrapEnabled ? " | Wrap On" : " | Wrap Off";
 
   statusBar->copy_label(title.c_str());
@@ -250,12 +252,12 @@ bool EditorWindow::findMatchFrom(int startPos, const std::string& searchText, in
     safeStart = bufferLength;
   }
 
-  if (textBuffer.search_forward(safeStart, searchText.c_str(), &findPos)) {
+  if (textBuffer.search_forward(safeStart, searchText.c_str(), &findPos, matchCaseEnabled)) {
     return true;
   }
 
   if (wrapAround && safeStart > 0) {
-    return textBuffer.search_forward(0, searchText.c_str(), &findPos) != 0;
+    return textBuffer.search_forward(0, searchText.c_str(), &findPos, matchCaseEnabled) != 0;
   }
 
   return false;
@@ -277,12 +279,13 @@ bool EditorWindow::findPreviousMatchFrom(int startPos, const std::string& search
     safeStart = bufferLength;
   }
 
-  if (textBuffer.search_backward(safeStart, searchText.c_str(), &findPos)) {
+  if (textBuffer.search_backward(safeStart, searchText.c_str(), &findPos, matchCaseEnabled)) {
     return true;
   }
 
   if (wrapAround && safeStart < bufferLength) {
-    return textBuffer.search_backward(bufferLength, searchText.c_str(), &findPos) != 0;
+    return textBuffer.search_backward(bufferLength, searchText.c_str(), &findPos,
+                                      matchCaseEnabled) != 0;
   }
 
   return false;
@@ -388,6 +391,11 @@ void EditorWindow::toggleLineNumbers() {
   textEditor->redraw();
 }
 
+void EditorWindow::toggleMatchCase() {
+  matchCaseEnabled = !matchCaseEnabled;
+  updateStatusBar();
+}
+
 int EditorWindow::replaceAllMatches(const std::string& oldText, const std::string& newText,
                                     int& lastMatchPos) {
   int startPos = 0;
@@ -468,6 +476,11 @@ void EditorWindow::ToggleWordWrap(Fl_Widget*, void* data) {
 void EditorWindow::ToggleLineNumbers(Fl_Widget*, void* data) {
   EditorWindow* self = static_cast<EditorWindow*>(data);
   self->toggleLineNumbers();
+}
+
+void EditorWindow::ToggleMatchCase(Fl_Widget*, void* data) {
+  EditorWindow* self = static_cast<EditorWindow*>(data);
+  self->toggleMatchCase();
 }
 
 void EditorWindow::Find(Fl_Widget*, void* data) {
