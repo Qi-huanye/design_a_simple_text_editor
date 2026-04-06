@@ -25,6 +25,11 @@ private:
   bool findMatchFrom(int startPos, const std::string& searchText, int& findPos,
                      bool wrapAround = true) const;
   void selectMatch(int startPos, int length);
+  void selectAllText();
+  bool goToLineNumber(int lineNumber);
+  void deleteCurrentLine();
+  int lineCount() const;
+  int currentLineNumber() const;
   int replaceAllMatches(const std::string& oldText, const std::string& newText, int& lastMatchPos);
   static void Open(Fl_Widget*, void*);
   static void Save(Fl_Widget*, void*);
@@ -34,9 +39,13 @@ private:
   static void Changed(int pos, int nInserted, int nDeleted, int nRestyled, const char* deletedText,
                       void* cbArg);
   static void Undo(Fl_Widget*, void*);
+  static void Redo(Fl_Widget*, void*);
   static void Cut(Fl_Widget*, void*);
   static void Copy(Fl_Widget*, void*);
   static void Paste(Fl_Widget*, void*);
+  static void SelectAll(Fl_Widget*, void*);
+  static void GoToLine(Fl_Widget*, void*);
+  static void DeleteCurrentLine(Fl_Widget*, void*);
   static void Find(Fl_Widget*, void*);
   static void FindNext(Fl_Widget*, void*);
   static void Replace(Fl_Widget*, void*);

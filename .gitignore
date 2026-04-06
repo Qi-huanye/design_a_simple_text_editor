@@ -19,3 +19,4 @@ compile_commands.json
 # VSCode 本地配置（可选）
 .vscode/
 .codex
+CODING_LEARN_NOTES.md

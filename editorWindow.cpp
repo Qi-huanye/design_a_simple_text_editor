@@ -18,9 +18,13 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
   menuBar->add("File/Save As", 0, SaveAs, this);
   menuBar->add("File/New", FL_COMMAND + 'n', New, this);
   menuBar->add("Edit/Undo", FL_COMMAND + 'z', Undo, this);
+  menuBar->add("Edit/Redo", FL_COMMAND + 'y', Redo, this);
   menuBar->add("Edit/Cut", FL_COMMAND + 'x', Cut, this);
   menuBar->add("Edit/Copy", FL_COMMAND + 'c', Copy, this);
   menuBar->add("Edit/Paste", FL_COMMAND + 'v', Paste, this);
+  menuBar->add("Edit/Select All", FL_COMMAND + 'a', SelectAll, this);
+  menuBar->add("Edit/Delete Current Line", FL_COMMAND + 'd', DeleteCurrentLine, this);
+  menuBar->add("Edit/Go To Line", FL_COMMAND + 'g', GoToLine, this);
   menuBar->add("Edit/Find", FL_COMMAND + 'f', Find, this);
   menuBar->add("Edit/Find Next", 0, FindNext, this);
   menuBar->add("Edit/Replace", 0, Replace, this);
@@ -222,6 +226,69 @@ void EditorWindow::selectMatch(int startPos, int length) {
   textEditor->take_focus();
 }
 
+void EditorWindow::selectAllText() {
+  textBuffer.select(0, textBuffer.length());
+  textEditor->insert_position(textBuffer.length());
+  textEditor->show_insert_position();
+  textEditor->take_focus();
+}
+
+int EditorWindow::lineCount() const {
+  if (textBuffer.length() == 0) {
+    return 1;
+  }
+
+  return textBuffer.count_lines(0, textBuffer.length()) + 1;
+}
+
+int EditorWindow::currentLineNumber() const {
+  return textBuffer.count_lines(0, textEditor->insert_position()) + 1;
+}
+
+bool EditorWindow::goToLineNumber(int lineNumber) {
+  if (lineNumber < 1 || lineNumber > lineCount()) {
+    return false;
+  }
+
+  int position = 0;
+  if (lineNumber > 1) {
+    position = textBuffer.skip_lines(0, lineNumber - 1);
+  }
+
+  textBuffer.unselect();
+  textEditor->insert_position(position);
+  textEditor->show_insert_position();
+  textEditor->take_focus();
+  return true;
+}
+
+void EditorWindow::deleteCurrentLine() {
+  const int bufferLength = textBuffer.length();
+  if (bufferLength == 0) {
+    fl_alert("Buffer is empty");
+    return;
+  }
+
+  const int cursorPos = textEditor->insert_position();
+  const int lineStart = textBuffer.line_start(cursorPos);
+  const int lineEnd = textBuffer.line_end(cursorPos);
+
+  int deleteStart = lineStart;
+  int deleteEnd = lineEnd;
+
+  if (lineEnd < bufferLength) {
+    deleteEnd = lineEnd + 1;
+  } else if (lineStart > 0) {
+    deleteStart = lineStart - 1;
+  }
+
+  textBuffer.remove(deleteStart, deleteEnd);
+  textBuffer.unselect();
+  textEditor->insert_position(deleteStart);
+  textEditor->show_insert_position();
+  textEditor->take_focus();
+}
+
 int EditorWindow::replaceAllMatches(const std::string& oldText, const std::string& newText,
                                     int& lastMatchPos) {
   int startPos = 0;
@@ -244,6 +311,11 @@ void EditorWindow::Undo(Fl_Widget*, void* data) {
   Fl_Text_Editor::kf_undo(0, self->textEditor);
 }
 
+void EditorWindow::Redo(Fl_Widget*, void* data) {
+  EditorWindow* self = static_cast<EditorWindow*>(data);
+  Fl_Text_Editor::kf_redo(0, self->textEditor);
+}
+
 void EditorWindow::Cut(Fl_Widget*, void* data) {
   EditorWindow* self = static_cast<EditorWindow*>(data);
   Fl_Text_Editor::kf_cut(0, self->textEditor);
@@ -257,6 +329,36 @@ void EditorWindow::Copy(Fl_Widget*, void* data) {
 void EditorWindow::Paste(Fl_Widget*, void* data) {
   EditorWindow* self = static_cast<EditorWindow*>(data);
   Fl_Text_Editor::kf_paste(0, self->textEditor);
+}
+
+void EditorWindow::SelectAll(Fl_Widget*, void* data) {
+  EditorWindow* self = static_cast<EditorWindow*>(data);
+  self->selectAllText();
+}
+
+void EditorWindow::GoToLine(Fl_Widget*, void* data) {
+  EditorWindow* self = static_cast<EditorWindow*>(data);
+
+  std::string currentLine = std::to_string(self->currentLineNumber());
+  const char* input = fl_input("Go to line:", currentLine.c_str());
+  if (input == nullptr || input[0] == '\0') {
+    return;
+  }
+
+  char* endPtr = nullptr;
+  const long lineNumber = std::strtol(input, &endPtr, 10);
+  if (endPtr == input || *endPtr != '\0' || lineNumber < 1 || lineNumber > self->lineCount()) {
+    std::string message = "Line number must be between 1 and " + std::to_string(self->lineCount()) + ".";
+    fl_alert("%s", message.c_str());
+    return;
+  }
+
+  self->goToLineNumber(static_cast<int>(lineNumber));
+}
+
+void EditorWindow::DeleteCurrentLine(Fl_Widget*, void* data) {
+  EditorWindow* self = static_cast<EditorWindow*>(data);
+  self->deleteCurrentLine();
 }
 
 void EditorWindow::Find(Fl_Widget*, void* data) {
