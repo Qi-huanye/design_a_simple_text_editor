@@ -48,7 +48,11 @@ void EditorWindow::Open(Fl_Widget*, void* data) {
   Fl_Native_File_Chooser fileChooser;
   fileChooser.type(Fl_Native_File_Chooser::BROWSE_FILE);
   fileChooser.title("Open File");
-  int isSuccess = fileChooser.show();
+  int isSuccess;
+  if (self->confirmDiscardChange()) {
+    isSuccess = fileChooser.show();
+  } else
+    return;
   if (!(isSuccess)) {
     const char* filename = fileChooser.filename();
     self->open(filename);
@@ -88,10 +92,11 @@ void EditorWindow::saveAs() {
 
 void EditorWindow::New(Fl_Widget*, void* data) {
   EditorWindow* self = static_cast<EditorWindow*>(data);
-  self -> newFile();
+  if (self->confirmDiscardChange())
+    self->newFile();
 }
 
-void EditorWindow::newFile(){
+void EditorWindow::newFile() {
   textBuffer.text("");
   currentFileName.clear();
   modified = false;
@@ -100,4 +105,21 @@ void EditorWindow::newFile(){
 void EditorWindow::Changed(int, int, int, int, const char*, void* cbArg) {
   EditorWindow* self = static_cast<EditorWindow*>(cbArg);
   self->modified = true;
+}
+
+bool EditorWindow::confirmDiscardChange() {
+  if (!modified) {
+    return true;
+  } else {
+    int choosen =
+        fl_choice("You have unsaved file. Do you want to save?", "Cancel", "Save", "Discard");
+    if (choosen == 0) {
+      return false;
+    } else if (choosen == 1) {
+      save();
+      return !modified;
+    } else {
+      return true;
+    }
+  }
 }

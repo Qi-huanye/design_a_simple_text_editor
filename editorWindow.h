@@ -18,6 +18,7 @@ private:
   void save();
   void saveAs();
   void newFile();
+  bool confirmDiscardChange();
   static void Open(Fl_Widget*, void*);
   static void Save(Fl_Widget*, void*);
   static void SaveAs(Fl_Widget*, void*);
