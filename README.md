@@ -2,6 +2,17 @@
 
 A lightweight GUI text editor written in C++ with FLTK.
 
+## Branches
+
+- `master`: current FLTK GUI editor
+- `cli_text_editor`: preserved command-line editor version
+
+If you want the original CLI editor, switch branches:
+
+```bash
+git checkout cli_text_editor
+```
+
 ## Features
 
 - Create, open, save, and save files as new names
@@ -28,7 +39,7 @@ cmake ..
 make
 ```
 
-## Run
+## Run On `master`
 
 Start an empty editor window:
 
@@ -53,3 +64,4 @@ Open a file immediately:
 - The status bar shows whether the file is saved or modified.
 - Search supports forward and backward navigation.
 - `Replace All` shows how many matches were replaced.
+- The `cli_text_editor` branch keeps the earlier command-line workflow.
