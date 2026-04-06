@@ -1,10 +1,42 @@
 #include "editorWindow.h"
+#include <FL/Enumerations.H>
 #include <FL/Fl_Native_File_Chooser.H>
 #include <FL/fl_ask.H>
 #include <cstdlib>
 
+class EditorTextWidget : public Fl_Text_Editor {
+public:
+  EditorTextWidget(int x, int y, int w, int h, EditorWindow* owner)
+      : Fl_Text_Editor(x, y, w, h), owner(owner) {
+  }
+
+  int handle(int event) override {
+    const int handled = Fl_Text_Editor::handle(event);
+
+    switch (event) {
+      case FL_PUSH:
+      case FL_DRAG:
+      case FL_RELEASE:
+      case FL_KEYDOWN:
+      case FL_KEYUP:
+      case FL_PASTE:
+      case FL_FOCUS:
+      case FL_UNFOCUS:
+        owner->updateStatusBar();
+        break;
+      default:
+        break;
+    }
+
+    return handled;
+  }
+
+private:
+  EditorWindow* owner;
+};
+
 EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w, h, title) {
-  textEditor = new Fl_Text_Editor(0, 25, w, h - 25 - 24);
+  textEditor = new EditorTextWidget(0, 25, w, h - 25 - 24, this);
   textEditor->buffer(textBuffer);
 
   statusBar = new Fl_Box(0, h - 24, w, 24);
@@ -29,6 +61,7 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
   menuBar->add("Edit/Find Next", 0, FindNext, this);
   menuBar->add("Edit/Replace", 0, Replace, this);
   menuBar->add("Edit/Replace All", 0, ReplaceAll, this);
+  menuBar->add("View/Word Wrap", 0, ToggleWordWrap, this, FL_MENU_TOGGLE);
 
   textBuffer.add_modify_callback(Changed, this);
   resizable(textEditor);
@@ -189,6 +222,12 @@ void EditorWindow::updateStatusBar() {
     title = "Saved | " + title;
   }
 
+  title += " | Ln " + std::to_string(currentLineNumber());
+  title += ", Col " + std::to_string(currentColumnNumber());
+  title += " | Lines " + std::to_string(lineCount());
+  title += ", Chars " + std::to_string(textBuffer.length());
+  title += wordWrapEnabled ? " | Wrap On" : " | Wrap Off";
+
   statusBar->copy_label(title.c_str());
 }
 
@@ -245,6 +284,12 @@ int EditorWindow::currentLineNumber() const {
   return textBuffer.count_lines(0, textEditor->insert_position()) + 1;
 }
 
+int EditorWindow::currentColumnNumber() const {
+  const int cursorPos = textEditor->insert_position();
+  const int lineStart = textBuffer.line_start(cursorPos);
+  return cursorPos - lineStart + 1;
+}
+
 bool EditorWindow::goToLineNumber(int lineNumber) {
   if (lineNumber < 1 || lineNumber > lineCount()) {
     return false;
@@ -287,6 +332,18 @@ void EditorWindow::deleteCurrentLine() {
   textEditor->insert_position(deleteStart);
   textEditor->show_insert_position();
   textEditor->take_focus();
+}
+
+void EditorWindow::toggleWordWrap() {
+  wordWrapEnabled = !wordWrapEnabled;
+  if (wordWrapEnabled) {
+    textEditor->wrap_mode(Fl_Text_Display::WRAP_AT_BOUNDS, 0);
+  } else {
+    textEditor->wrap_mode(Fl_Text_Display::WRAP_NONE, 0);
+  }
+
+  updateStatusBar();
+  textEditor->redraw();
 }
 
 int EditorWindow::replaceAllMatches(const std::string& oldText, const std::string& newText,
@@ -359,6 +416,11 @@ void EditorWindow::GoToLine(Fl_Widget*, void* data) {
 void EditorWindow::DeleteCurrentLine(Fl_Widget*, void* data) {
   EditorWindow* self = static_cast<EditorWindow*>(data);
   self->deleteCurrentLine();
+}
+
+void EditorWindow::ToggleWordWrap(Fl_Widget*, void* data) {
+  EditorWindow* self = static_cast<EditorWindow*>(data);
+  self->toggleWordWrap();
 }
 
 void EditorWindow::Find(Fl_Widget*, void* data) {

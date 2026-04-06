@@ -9,11 +9,14 @@
 #include <FL/Fl_Widget.H>
 #include <string>
 
+class EditorTextWidget;
+
 class EditorWindow : public Fl_Double_Window {
 public:
   EditorWindow(int w, int h, const char* title);
 
 private:
+  friend class EditorTextWidget;
   void open(const char* fileName);
   void save(const char* fileName);
   void save();
@@ -28,8 +31,10 @@ private:
   void selectAllText();
   bool goToLineNumber(int lineNumber);
   void deleteCurrentLine();
+  void toggleWordWrap();
   int lineCount() const;
   int currentLineNumber() const;
+  int currentColumnNumber() const;
   int replaceAllMatches(const std::string& oldText, const std::string& newText, int& lastMatchPos);
   static void Open(Fl_Widget*, void*);
   static void Save(Fl_Widget*, void*);
@@ -46,6 +51,7 @@ private:
   static void SelectAll(Fl_Widget*, void*);
   static void GoToLine(Fl_Widget*, void*);
   static void DeleteCurrentLine(Fl_Widget*, void*);
+  static void ToggleWordWrap(Fl_Widget*, void*);
   static void Find(Fl_Widget*, void*);
   static void FindNext(Fl_Widget*, void*);
   static void Replace(Fl_Widget*, void*);
@@ -56,6 +62,7 @@ private:
   Fl_Text_Buffer textBuffer;
   std::string currentFileName;
   std::string lastFindString;
+  bool wordWrapEnabled = false;
   bool modified = false;
 };
 
