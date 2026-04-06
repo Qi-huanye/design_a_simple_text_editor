@@ -3,8 +3,10 @@
 #include <FL/fl_ask.H>
 
 EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w, h, title) {
-  textEditor = new Fl_Text_Editor(0, 25, w, h - 25);
+  textEditor = new Fl_Text_Editor(0, 25, w, h - 25 - 24);
   textEditor->buffer(textBuffer);
+
+  statusBar = new Fl_Box(0, h - 24, w, 24);
 
   menuBar = new Fl_Menu_Bar(0, 0, this->w(), 25);
   menuBar->add("File/Open", 0, Open, this);
@@ -17,6 +19,7 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
 
   end();
   updateTitle();
+  updateStatusBar();
   callback(Close, this);
 }
 
@@ -25,6 +28,7 @@ void EditorWindow::open(const char* fileName) {
     currentFileName = fileName;
     modified = false;
     updateTitle();
+    updateStatusBar();
   } else {
     fl_alert("Failure to Open");
   }
@@ -35,6 +39,7 @@ void EditorWindow::save(const char* fileName) {
     currentFileName = fileName;
     modified = false;
     updateTitle();
+    updateStatusBar();
   } else {
     fl_alert("Failure to Save");
   }
@@ -106,6 +111,7 @@ void EditorWindow::newFile() {
   currentFileName.clear();
   modified = false;
   updateTitle();
+  updateStatusBar();
 }
 
 void EditorWindow::Changed(int, int, int, int, const char*, void* cbArg) {
@@ -113,6 +119,7 @@ void EditorWindow::Changed(int, int, int, int, const char*, void* cbArg) {
   if (!self->modified) {
     self->modified = true;
     self->updateTitle();
+    self->updateStatusBar();
   }
 }
 
@@ -150,4 +157,19 @@ void EditorWindow::Close(Fl_Widget*, void* data) {
   if (self->confirmDiscardChange()) {
     self->hide();
   }
+}
+
+void EditorWindow::updateStatusBar() {
+  std::string title;
+  if (currentFileName.empty()) {
+    title = "Untitled";
+  } else {
+    title = currentFileName;
+  }
+
+  if (modified) {
+    title = "*" + title;
+  }
+
+  statusBar->copy_label(title.c_str());
 }

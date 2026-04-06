@@ -2,6 +2,7 @@
 #define EDITOR_WINDOW_H
 
 #include <FL/Fl_Double_Window.H>
+#include <FL/Fl_Box.H>
 #include <FL/Fl_Menu_Bar.H>
 #include <FL/Fl_Text_Buffer.H>
 #include <FL/Fl_Text_Editor.H>
