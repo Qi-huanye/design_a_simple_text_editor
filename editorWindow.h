@@ -31,6 +31,7 @@ private:
   void selectAllText();
   bool goToLineNumber(int lineNumber);
   void deleteCurrentLine();
+  void toggleLineNumbers();
   void toggleWordWrap();
   int lineCount() const;
   int currentLineNumber() const;
@@ -51,6 +52,7 @@ private:
   static void SelectAll(Fl_Widget*, void*);
   static void GoToLine(Fl_Widget*, void*);
   static void DeleteCurrentLine(Fl_Widget*, void*);
+  static void ToggleLineNumbers(Fl_Widget*, void*);
   static void ToggleWordWrap(Fl_Widget*, void*);
   static void Find(Fl_Widget*, void*);
   static void FindNext(Fl_Widget*, void*);
@@ -62,6 +64,7 @@ private:
   Fl_Text_Buffer textBuffer;
   std::string currentFileName;
   std::string lastFindString;
+  bool lineNumbersEnabled = true;
   bool wordWrapEnabled = false;
   bool modified = false;
 };

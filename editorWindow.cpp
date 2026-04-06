@@ -61,9 +61,11 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
   menuBar->add("Edit/Find Next", 0, FindNext, this);
   menuBar->add("Edit/Replace", 0, Replace, this);
   menuBar->add("Edit/Replace All", 0, ReplaceAll, this);
+  menuBar->add("View/Line Numbers", 0, ToggleLineNumbers, this, FL_MENU_TOGGLE | FL_MENU_VALUE);
   menuBar->add("View/Word Wrap", 0, ToggleWordWrap, this, FL_MENU_TOGGLE);
 
   textBuffer.add_modify_callback(Changed, this);
+  textEditor->linenumber_width(48);
   resizable(textEditor);
 
   end();
@@ -346,6 +348,18 @@ void EditorWindow::toggleWordWrap() {
   textEditor->redraw();
 }
 
+void EditorWindow::toggleLineNumbers() {
+  lineNumbersEnabled = !lineNumbersEnabled;
+  if (lineNumbersEnabled) {
+    textEditor->linenumber_width(48);
+  } else {
+    textEditor->linenumber_width(0);
+  }
+
+  updateStatusBar();
+  textEditor->redraw();
+}
+
 int EditorWindow::replaceAllMatches(const std::string& oldText, const std::string& newText,
                                     int& lastMatchPos) {
   int startPos = 0;
@@ -421,6 +435,11 @@ void EditorWindow::DeleteCurrentLine(Fl_Widget*, void* data) {
 void EditorWindow::ToggleWordWrap(Fl_Widget*, void* data) {
   EditorWindow* self = static_cast<EditorWindow*>(data);
   self->toggleWordWrap();
+}
+
+void EditorWindow::ToggleLineNumbers(Fl_Widget*, void* data) {
+  EditorWindow* self = static_cast<EditorWindow*>(data);
+  self->toggleLineNumbers();
 }
 
 void EditorWindow::Find(Fl_Widget*, void* data) {
