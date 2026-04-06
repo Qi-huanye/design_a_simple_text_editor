@@ -27,6 +27,8 @@ private:
   void updateStatusBar();
   bool findMatchFrom(int startPos, const std::string& searchText, int& findPos,
                      bool wrapAround = true) const;
+  bool findPreviousMatchFrom(int startPos, const std::string& searchText, int& findPos,
+                             bool wrapAround = true) const;
   void selectMatch(int startPos, int length);
   void selectAllText();
   bool goToLineNumber(int lineNumber);
@@ -56,6 +58,7 @@ private:
   static void ToggleWordWrap(Fl_Widget*, void*);
   static void Find(Fl_Widget*, void*);
   static void FindNext(Fl_Widget*, void*);
+  static void FindPrevious(Fl_Widget*, void*);
   static void Replace(Fl_Widget*, void*);
   static void ReplaceAll(Fl_Widget*, void*);
   Fl_Menu_Bar* menuBar;

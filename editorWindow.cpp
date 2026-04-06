@@ -59,6 +59,7 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
   menuBar->add("Edit/Go To Line", FL_COMMAND + 'g', GoToLine, this);
   menuBar->add("Edit/Find", FL_COMMAND + 'f', Find, this);
   menuBar->add("Edit/Find Next", 0, FindNext, this);
+  menuBar->add("Edit/Find Previous", 0, FindPrevious, this);
   menuBar->add("Edit/Replace", 0, Replace, this);
   menuBar->add("Edit/Replace All", 0, ReplaceAll, this);
   menuBar->add("View/Line Numbers", 0, ToggleLineNumbers, this, FL_MENU_TOGGLE | FL_MENU_VALUE);
@@ -255,6 +256,33 @@ bool EditorWindow::findMatchFrom(int startPos, const std::string& searchText, in
 
   if (wrapAround && safeStart > 0) {
     return textBuffer.search_forward(0, searchText.c_str(), &findPos) != 0;
+  }
+
+  return false;
+}
+
+bool EditorWindow::findPreviousMatchFrom(int startPos, const std::string& searchText, int& findPos,
+                                         bool wrapAround) const {
+  if (searchText.empty()) {
+    return false;
+  }
+
+  int safeStart = startPos;
+  if (safeStart < 0) {
+    safeStart = 0;
+  }
+
+  const int bufferLength = textBuffer.length();
+  if (safeStart > bufferLength) {
+    safeStart = bufferLength;
+  }
+
+  if (textBuffer.search_backward(safeStart, searchText.c_str(), &findPos)) {
+    return true;
+  }
+
+  if (wrapAround && safeStart < bufferLength) {
+    return textBuffer.search_backward(bufferLength, searchText.c_str(), &findPos) != 0;
   }
 
   return false;
@@ -471,6 +499,23 @@ void EditorWindow::FindNext(Fl_Widget*, void* data) {
 
   int findPos;
   if (self->findMatchFrom(self->textEditor->insert_position(), self->lastFindString, findPos)) {
+    self->selectMatch(findPos, self->lastFindString.size());
+  } else {
+    fl_alert("Not Found");
+  }
+}
+
+void EditorWindow::FindPrevious(Fl_Widget*, void* data) {
+  EditorWindow* self = static_cast<EditorWindow*>(data);
+
+  if (self->lastFindString.empty()) {
+    fl_alert("No previous search");
+    return;
+  }
+
+  const int startPos = self->textEditor->insert_position() - static_cast<int>(self->lastFindString.size()) - 1;
+  int findPos;
+  if (self->findPreviousMatchFrom(startPos, self->lastFindString, findPos)) {
     self->selectMatch(findPos, self->lastFindString.size());
   } else {
     fl_alert("Not Found");
