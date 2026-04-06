@@ -21,6 +21,7 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
   menuBar->add("Edit/Copy", FL_COMMAND + 'c', Copy, this);
   menuBar->add("Edit/Paste", FL_COMMAND + 'v', Paste, this);
   menuBar->add("Edit/Find", FL_COMMAND + 'f', Find, this);
+  menuBar->add("Edit/Find Next", 0, FindNext, this);
 
   textBuffer.add_modify_callback(Changed, this);
   resizable(textEditor);
@@ -211,6 +212,7 @@ void EditorWindow::Find(Fl_Widget*, void* data) {
     return;
   }
   std::string findString = input;
+  self->lastFindString = findString;
   int findPos;
   if (self->textBuffer.search_forward(self->textEditor->insert_position(), findString.c_str(),
                                       &findPos)) {
@@ -220,5 +222,23 @@ void EditorWindow::Find(Fl_Widget*, void* data) {
     self->textEditor->take_focus();
   } else {
     fl_alert("Not Found");
+  }
+}
+
+void EditorWindow::FindNext(Fl_Widget*, void* data) {
+  EditorWindow* self = static_cast<EditorWindow*>(data);
+  if (self->lastFindString.empty()) {
+    fl_alert("No previous search");
+  } else {
+    int findPos;
+    if (self->textBuffer.search_forward(self->textEditor->insert_position(),
+                                        self->lastFindString.c_str(), &findPos)) {
+      self->textBuffer.select(findPos, findPos + self->lastFindString.size());
+      self->textEditor->insert_position(findPos + self->lastFindString.size());
+      self->textEditor->show_insert_position();
+      self->textEditor->take_focus();
+    } else {
+      fl_alert("Not Found");
+    }
   }
 }

@@ -34,11 +34,13 @@ private:
   static void Copy(Fl_Widget*, void*);
   static void Paste(Fl_Widget*, void*);
   static void Find(Fl_Widget*, void*);
+  static void FindNext(Fl_Widget*, void*);
   Fl_Menu_Bar* menuBar;
   Fl_Box* statusBar;
   Fl_Text_Editor* textEditor;
   Fl_Text_Buffer textBuffer;
   std::string currentFileName;
+  std::string lastFindString;
   bool modified = false;
 };
 
