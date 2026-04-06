@@ -7,6 +7,9 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
   textEditor->buffer(textBuffer);
 
   statusBar = new Fl_Box(0, h - 24, w, 24);
+  statusBar->box(FL_THIN_UP_BOX);
+  statusBar->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+  statusBar->labelsize(12);
 
   menuBar = new Fl_Menu_Bar(0, 0, this->w(), 25);
   menuBar->add("File/Open", 0, Open, this);
@@ -168,7 +171,9 @@ void EditorWindow::updateStatusBar() {
   }
 
   if (modified) {
-    title = "*" + title;
+    title = "Modified | " + title;
+  } else {
+    title = "Saved | " + title;
   }
 
   statusBar->copy_label(title.c_str());

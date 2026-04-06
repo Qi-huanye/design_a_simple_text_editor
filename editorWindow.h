@@ -29,6 +29,10 @@ private:
   static void Close(Fl_Widget*, void*);
   static void Changed(int pos, int nInserted, int nDeleted, int nRestyled, const char* deletedText,
                       void* cbArg);
+  static void Undo(Fl_Widget*, void*);
+  static void Cut(Fl_Widget*, void*);
+  static void Copy(Fl_Widget*, void*);
+  static void Paste(Fl_Widget*, void*);
   Fl_Menu_Bar* menuBar;
   Fl_Box* statusBar;
   Fl_Text_Editor* textEditor;
