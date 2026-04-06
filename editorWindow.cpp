@@ -1,4 +1,6 @@
 #include "editorWindow.h"
+#include <FL/Fl_Native_File_Chooser.H>
+#include <iostream>
 
 EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w, h, title) {
   textEditor = new Fl_Text_Editor(0, 25, w, h - 25);
@@ -32,6 +34,17 @@ void EditorWindow::save() {
 
 void EditorWindow::Open(Fl_Widget*, void* data) {
   EditorWindow* self = static_cast<EditorWindow*>(data);
+  Fl_Native_File_Chooser fileChooser;
+  fileChooser.type(Fl_Native_File_Chooser::BROWSE_FILE);
+  int isSuccess = fileChooser.show();
+  if (!(isSuccess)){
+    const char* filename = fileChooser.filename();
+    self->open(filename);
+  } else if (isSuccess == 1){
+    return;
+  } else {
+    fl_alert(fileChooser.errmsg());
+  }
 }
 
 void EditorWindow::Save(Fl_Widget*, void* data) {

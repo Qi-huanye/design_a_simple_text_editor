@@ -6,6 +6,8 @@
 #include <FL/Fl_Text_Buffer.H>
 #include <FL/Fl_Text_Editor.H>
 #include <string>
+#include <FL/Fl_Widget.H>
+
 
 class EditorWindow : public Fl_Double_Window {
 public:
