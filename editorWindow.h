@@ -26,6 +26,9 @@ private:
   bool confirmDiscardChange();
   void updateTitle();
   void updateStatusBar();
+  void applyPinkTheme();
+  void layoutWidgets(int width, int height);
+  std::string displayFileName() const;
   bool findMatchFrom(int startPos, const std::string& searchText, int& findPos,
                      bool wrapAround = true) const;
   bool findPreviousMatchFrom(int startPos, const std::string& searchText, int& findPos,
@@ -66,8 +69,13 @@ private:
   static void FindPrevious(Fl_Widget*, void*);
   static void Replace(Fl_Widget*, void*);
   static void ReplaceAll(Fl_Widget*, void*);
+  void resize(int x, int y, int w, int h) override;
   Fl_Menu_Bar* menuBar;
   Fl_Box* statusBar;
+  Fl_Box* statusFileBox;
+  Fl_Box* statusCursorBox;
+  Fl_Box* statusStatsBox;
+  Fl_Box* statusModeBox;
   Fl_Text_Editor* textEditor;
   Fl_Text_Buffer textBuffer;
   std::string currentFileName;

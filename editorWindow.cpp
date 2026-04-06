@@ -1,8 +1,38 @@
 #include "editorWindow.h"
 #include <FL/Enumerations.H>
 #include <FL/Fl_Native_File_Chooser.H>
+#include <FL/fl_draw.H>
 #include <FL/fl_ask.H>
 #include <cstdlib>
+
+namespace {
+constexpr int kMenuHeight = 38;
+constexpr int kStatusHeight = 48;
+constexpr int kOuterPadding = 12;
+constexpr int kInnerGap = 8;
+
+Fl_Color makeColor(unsigned char r, unsigned char g, unsigned char b) {
+  return fl_rgb_color(r, g, b);
+}
+
+const Fl_Color kWindowBg = makeColor(255, 243, 248);
+const Fl_Color kMenuBg = makeColor(255, 219, 232);
+const Fl_Color kMenuSelection = makeColor(245, 171, 198);
+const Fl_Color kMenuText = makeColor(112, 41, 71);
+const Fl_Color kEditorBg = makeColor(255, 250, 252);
+const Fl_Color kEditorText = makeColor(82, 34, 53);
+const Fl_Color kEditorBorder = makeColor(236, 190, 208);
+const Fl_Color kCursorColor = makeColor(194, 66, 118);
+const Fl_Color kSelectionColor = makeColor(255, 196, 220);
+const Fl_Color kLineNumberBg = makeColor(252, 228, 238);
+const Fl_Color kLineNumberText = makeColor(145, 79, 103);
+const Fl_Color kStatusStripBg = makeColor(255, 232, 241);
+const Fl_Color kStatusFileBg = makeColor(255, 209, 225);
+const Fl_Color kStatusFileDirtyBg = makeColor(234, 120, 162);
+const Fl_Color kStatusCursorBg = makeColor(255, 242, 247);
+const Fl_Color kStatusStatsBg = makeColor(250, 227, 236);
+const Fl_Color kStatusModeBg = makeColor(247, 216, 230);
+}
 
 class EditorTextWidget : public Fl_Text_Editor {
 public:
@@ -36,15 +66,21 @@ private:
 };
 
 EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w, h, title) {
-  textEditor = new EditorTextWidget(0, 25, w, h - 25 - 24, this);
+  color(kWindowBg);
+
+  textEditor = new EditorTextWidget(0, 0, w, h, this);
   textEditor->buffer(textBuffer);
 
-  statusBar = new Fl_Box(0, h - 24, w, 24);
-  statusBar->box(FL_THIN_UP_BOX);
-  statusBar->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-  statusBar->labelsize(12);
+  statusBar = new Fl_Box(0, 0, w, kStatusHeight);
+  statusBar->box(FL_FLAT_BOX);
+  statusBar->color(kStatusStripBg);
 
-  menuBar = new Fl_Menu_Bar(0, 0, this->w(), 25);
+  statusFileBox = new Fl_Box(0, 0, 0, 0);
+  statusCursorBox = new Fl_Box(0, 0, 0, 0);
+  statusStatsBox = new Fl_Box(0, 0, 0, 0);
+  statusModeBox = new Fl_Box(0, 0, 0, 0);
+
+  menuBar = new Fl_Menu_Bar(0, 0, this->w(), kMenuHeight);
   menuBar->add("File/Open", FL_COMMAND + 'o', Open, this);
   menuBar->add("File/Save", FL_COMMAND + 's', Save, this);
   menuBar->add("File/Save As", 0, SaveAs, this);
@@ -70,6 +106,8 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
   textBuffer.add_modify_callback(Changed, this);
   textEditor->linenumber_width(48);
   resizable(textEditor);
+  applyPinkTheme();
+  layoutWidgets(w, h);
 
   end();
   updateTitle();
@@ -79,6 +117,92 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
 
 void EditorWindow::openFile(const char* fileName) {
   open(fileName);
+}
+
+void EditorWindow::resize(int x, int y, int w, int h) {
+  Fl_Double_Window::resize(x, y, w, h);
+  layoutWidgets(w, h);
+}
+
+void EditorWindow::applyPinkTheme() {
+  menuBar->box(FL_FLAT_BOX);
+  menuBar->down_box(FL_FLAT_BOX);
+  menuBar->color(kMenuBg);
+  menuBar->selection_color(kMenuSelection);
+  menuBar->textcolor(kMenuText);
+  menuBar->textfont(FL_HELVETICA_BOLD);
+  menuBar->textsize(15);
+
+  textEditor->box(FL_BORDER_BOX);
+  textEditor->color(kEditorBg, kSelectionColor);
+  textEditor->selection_color(kSelectionColor);
+  textEditor->textfont(FL_COURIER);
+  textEditor->textsize(15);
+  textEditor->textcolor(kEditorText);
+  textEditor->cursor_color(kCursorColor);
+  textEditor->linenumber_bgcolor(kLineNumberBg);
+  textEditor->linenumber_fgcolor(kLineNumberText);
+  textEditor->linenumber_font(FL_HELVETICA_BOLD);
+  textEditor->linenumber_size(13);
+  textEditor->labelcolor(kEditorBorder);
+
+  Fl_Box* statusBoxes[] = {statusFileBox, statusCursorBox, statusStatsBox, statusModeBox};
+  for (Fl_Box* box : statusBoxes) {
+    box->box(FL_FLAT_BOX);
+    box->labelfont(FL_HELVETICA_BOLD);
+    box->labelsize(12);
+    box->labelcolor(kMenuText);
+    box->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+  }
+
+  statusFileBox->color(kStatusFileBg);
+  statusCursorBox->color(kStatusCursorBg);
+  statusStatsBox->color(kStatusStatsBg);
+  statusModeBox->color(kStatusModeBg);
+}
+
+void EditorWindow::layoutWidgets(int width, int height) {
+  menuBar->resize(0, 0, width, kMenuHeight);
+
+  const int statusY = height - kStatusHeight;
+  statusBar->resize(0, statusY, width, kStatusHeight);
+
+  const int editorX = kOuterPadding;
+  const int editorY = kMenuHeight + kInnerGap;
+  const int editorWidth = width - 2 * kOuterPadding;
+  const int editorHeight = statusY - editorY - kInnerGap;
+  textEditor->resize(editorX, editorY, editorWidth > 0 ? editorWidth : 0, editorHeight > 0 ? editorHeight : 0);
+
+  const int segmentY = statusY + 8;
+  const int segmentHeight = kStatusHeight - 16;
+  const int availableWidth = width - 2 * kOuterPadding - 3 * kInnerGap;
+  const int safeWidth = availableWidth > 0 ? availableWidth : 0;
+  const int fileWidth = safeWidth * 38 / 100;
+  const int cursorWidth = safeWidth * 18 / 100;
+  const int statsWidth = safeWidth * 20 / 100;
+  const int modeWidth = safeWidth - fileWidth - cursorWidth - statsWidth;
+
+  int segmentX = kOuterPadding;
+  statusFileBox->resize(segmentX, segmentY, fileWidth, segmentHeight);
+  segmentX += fileWidth + kInnerGap;
+  statusCursorBox->resize(segmentX, segmentY, cursorWidth, segmentHeight);
+  segmentX += cursorWidth + kInnerGap;
+  statusStatsBox->resize(segmentX, segmentY, statsWidth, segmentHeight);
+  segmentX += statsWidth + kInnerGap;
+  statusModeBox->resize(segmentX, segmentY, modeWidth > 0 ? modeWidth : 0, segmentHeight);
+}
+
+std::string EditorWindow::displayFileName() const {
+  if (currentFileName.empty()) {
+    return "Untitled";
+  }
+
+  const std::size_t slashPos = currentFileName.find_last_of("/\\");
+  if (slashPos == std::string::npos) {
+    return currentFileName;
+  }
+
+  return currentFileName.substr(slashPos + 1);
 }
 
 void EditorWindow::open(const char* fileName) {
@@ -199,12 +323,7 @@ bool EditorWindow::confirmDiscardChange() {
 }
 
 void EditorWindow::updateTitle() {
-  std::string title;
-  if (currentFileName.empty()) {
-    title = "Untitled";
-  } else {
-    title = currentFileName;
-  }
+  std::string title = displayFileName();
   if (modified)
     title = "*" + title;
   this->copy_label(title.c_str());
@@ -218,27 +337,21 @@ void EditorWindow::Close(Fl_Widget*, void* data) {
 }
 
 void EditorWindow::updateStatusBar() {
-  std::string title;
-  if (currentFileName.empty()) {
-    title = "Untitled";
-  } else {
-    title = currentFileName;
-  }
+  const std::string fileLabel = std::string(modified ? "Modified  " : "Saved  ") + displayFileName();
+  const std::string cursorLabel =
+      "Ln " + std::to_string(currentLineNumber()) + "  Col " + std::to_string(currentColumnNumber());
+  const std::string statsLabel =
+      std::to_string(lineCount()) + " lines  " + std::to_string(textBuffer.length()) + " chars";
+  std::string modeLabel = lineNumbersEnabled ? "Lines On" : "Lines Off";
+  modeLabel += wordWrapEnabled ? "  |  Wrap On" : "  |  Wrap Off";
+  modeLabel += matchCaseEnabled ? "  |  Match Case" : "  |  Ignore Case";
 
-  if (modified) {
-    title = "Modified | " + title;
-  } else {
-    title = "Saved | " + title;
-  }
-
-  title += " | Ln " + std::to_string(currentLineNumber());
-  title += ", Col " + std::to_string(currentColumnNumber());
-  title += " | Lines " + std::to_string(lineCount());
-  title += ", Chars " + std::to_string(textBuffer.length());
-  title += matchCaseEnabled ? " | Match Case" : " | Ignore Case";
-  title += wordWrapEnabled ? " | Wrap On" : " | Wrap Off";
-
-  statusBar->copy_label(title.c_str());
+  statusFileBox->color(modified ? kStatusFileDirtyBg : kStatusFileBg);
+  statusFileBox->labelcolor(modified ? FL_WHITE : kMenuText);
+  statusFileBox->copy_label(fileLabel.c_str());
+  statusCursorBox->copy_label(cursorLabel.c_str());
+  statusStatsBox->copy_label(statsLabel.c_str());
+  statusModeBox->copy_label(modeLabel.c_str());
 }
 
 bool EditorWindow::findMatchFrom(int startPos, const std::string& searchText, int& findPos,
