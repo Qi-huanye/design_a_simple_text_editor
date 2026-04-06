@@ -10,7 +10,9 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
   menuBar->add("File/Open", 0, Open, this);
   menuBar->add("File/Save", 0, Save, this);
   menuBar->add("File/Save As", 0, SaveAs, this);
+  menuBar->add("File/New", 0, New, this);
 
+  textBuffer.add_modify_callback(Changed, this);
   resizable(textEditor);
   end();
 }
@@ -18,6 +20,7 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
 void EditorWindow::open(const char* fileName) {
   if (!textBuffer.loadfile(fileName)) {
     currentFileName = fileName;
+    modified = false;
   } else {
     fl_alert("Failure to Open");
   }
@@ -26,6 +29,7 @@ void EditorWindow::open(const char* fileName) {
 void EditorWindow::save(const char* fileName) {
   if (!textBuffer.savefile(fileName)) {
     currentFileName = fileName;
+    modified = false;
   } else {
     fl_alert("Failure to Save");
   }
@@ -80,4 +84,20 @@ void EditorWindow::saveAs() {
   } else {
     fl_alert("%s", fileChooser.errmsg());
   }
+}
+
+void EditorWindow::New(Fl_Widget*, void* data) {
+  EditorWindow* self = static_cast<EditorWindow*>(data);
+  self -> newFile();
+}
+
+void EditorWindow::newFile(){
+  textBuffer.text("");
+  currentFileName.clear();
+  modified = false;
+}
+
+void EditorWindow::Changed(int, int, int, int, const char*, void* cbArg) {
+  EditorWindow* self = static_cast<EditorWindow*>(cbArg);
+  self->modified = true;
 }
