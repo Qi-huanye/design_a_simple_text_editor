@@ -1,21 +1,23 @@
 # Simple Text Editor
 
-A simple command-line text editor written in C++.
+A lightweight GUI text editor written in C++ with FLTK.
 
 ## Features
 
-- Create a new file
-- Open an existing file
-- Show file contents with line numbers
-- Insert, delete, and edit lines
-- Save and save as
-- Search and replace text
-- Show editor status
+- Create, open, save, and save files as new names
+- Open a file directly from the command line
+- Undo, redo, cut, copy, paste, and select all
+- Find, find next, find previous, replace, and replace all
+- Optional match-case search mode
+- Go to line, delete current line, and duplicate current line
+- Toggle word wrap and line numbers
+- Live status bar with file state, cursor line/column, and document statistics
 
 ## Requirements
 
 - CMake 3.10 or later
 - A C++17 compiler
+- FLTK 1.4
 
 ## Build
 
@@ -28,33 +30,26 @@ make
 
 ## Run
 
-```bash
-./text_editor
-```
-
-## Commands
-
-- `help`: show available commands
-- `new`: create a new file
-- `open <filename>`: open a file
-- `show`: display file contents
-- `insert <line> <text>`: insert text at a line
-- `delete <line>`: delete a line
-- `edit <line> <text>`: edit a line
-- `save`: save the current file
-- `saveas <filename>`: save as a new file
-- `find <text>`: find text in the current file
-- `replace <old> <new>`: replace text in the current file
-- `status`: show editor status
-- `quit`: exit the editor
-
-## Example
+Start an empty editor window:
 
 ```bash
-new
-insert 1 hello
-insert 2 world
-show
-saveas demo.txt
-quit
+./build/text_editor
 ```
+
+Open a file immediately:
+
+```bash
+./build/text_editor demo.txt
+```
+
+## Menus
+
+- `File`: new, open, save, save as
+- `Edit`: undo/redo, clipboard actions, search and replace, line tools
+- `View`: line numbers and word wrap
+
+## Notes
+
+- The status bar shows whether the file is saved or modified.
+- Search supports forward and backward navigation.
+- `Replace All` shows how many matches were replaced.
