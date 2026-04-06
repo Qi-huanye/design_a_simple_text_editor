@@ -14,6 +14,7 @@ class EditorTextWidget;
 class EditorWindow : public Fl_Double_Window {
 public:
   EditorWindow(int w, int h, const char* title);
+  void openFile(const char* fileName);
 
 private:
   friend class EditorTextWidget;

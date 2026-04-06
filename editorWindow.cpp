@@ -77,6 +77,10 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
   callback(Close, this);
 }
 
+void EditorWindow::openFile(const char* fileName) {
+  open(fileName);
+}
+
 void EditorWindow::open(const char* fileName) {
   if (!textBuffer.loadfile(fileName)) {
     currentFileName = fileName;
