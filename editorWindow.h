@@ -22,6 +22,10 @@ private:
   bool confirmDiscardChange();
   void updateTitle();
   void updateStatusBar();
+  bool findMatchFrom(int startPos, const std::string& searchText, int& findPos,
+                     bool wrapAround = true) const;
+  void selectMatch(int startPos, int length);
+  int replaceAllMatches(const std::string& oldText, const std::string& newText, int& lastMatchPos);
   static void Open(Fl_Widget*, void*);
   static void Save(Fl_Widget*, void*);
   static void SaveAs(Fl_Widget*, void*);

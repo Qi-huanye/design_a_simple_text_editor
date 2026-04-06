@@ -1,6 +1,7 @@
 #include "editorWindow.h"
 #include <FL/Fl_Native_File_Chooser.H>
 #include <FL/fl_ask.H>
+#include <cstdlib>
 
 EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w, h, title) {
   textEditor = new Fl_Text_Editor(0, 25, w, h - 25 - 24);
@@ -187,6 +188,57 @@ void EditorWindow::updateStatusBar() {
   statusBar->copy_label(title.c_str());
 }
 
+bool EditorWindow::findMatchFrom(int startPos, const std::string& searchText, int& findPos,
+                                 bool wrapAround) const {
+  if (searchText.empty()) {
+    return false;
+  }
+
+  int safeStart = startPos;
+  if (safeStart < 0) {
+    safeStart = 0;
+  }
+
+  const int bufferLength = textBuffer.length();
+  if (safeStart > bufferLength) {
+    safeStart = bufferLength;
+  }
+
+  if (textBuffer.search_forward(safeStart, searchText.c_str(), &findPos)) {
+    return true;
+  }
+
+  if (wrapAround && safeStart > 0) {
+    return textBuffer.search_forward(0, searchText.c_str(), &findPos) != 0;
+  }
+
+  return false;
+}
+
+void EditorWindow::selectMatch(int startPos, int length) {
+  textBuffer.select(startPos, startPos + length);
+  textEditor->insert_position(startPos + length);
+  textEditor->show_insert_position();
+  textEditor->take_focus();
+}
+
+int EditorWindow::replaceAllMatches(const std::string& oldText, const std::string& newText,
+                                    int& lastMatchPos) {
+  int startPos = 0;
+  int findPos = 0;
+  int count = 0;
+  lastMatchPos = -1;
+
+  while (findMatchFrom(startPos, oldText, findPos, false)) {
+    textBuffer.replace(findPos, findPos + oldText.size(), newText.c_str());
+    startPos = findPos + newText.size();
+    lastMatchPos = findPos;
+    count++;
+  }
+
+  return count;
+}
+
 void EditorWindow::Undo(Fl_Widget*, void* data) {
   EditorWindow* self = static_cast<EditorWindow*>(data);
   Fl_Text_Editor::kf_undo(0, self->textEditor);
@@ -209,19 +261,18 @@ void EditorWindow::Paste(Fl_Widget*, void* data) {
 
 void EditorWindow::Find(Fl_Widget*, void* data) {
   EditorWindow* self = static_cast<EditorWindow*>(data);
+
   const char* input = fl_input("Find:");
   if (input == nullptr || input[0] == '\0') {
     return;
   }
+
   std::string findString = input;
   self->lastFindString = findString;
+
   int findPos;
-  if (self->textBuffer.search_forward(self->textEditor->insert_position(), findString.c_str(),
-                                      &findPos)) {
-    self->textBuffer.select(findPos, findPos + findString.size());
-    self->textEditor->insert_position(findPos + findString.size());
-    self->textEditor->show_insert_position();
-    self->textEditor->take_focus();
+  if (self->findMatchFrom(self->textEditor->insert_position(), findString, findPos)) {
+    self->selectMatch(findPos, findString.size());
   } else {
     fl_alert("Not Found");
   }
@@ -229,41 +280,59 @@ void EditorWindow::Find(Fl_Widget*, void* data) {
 
 void EditorWindow::FindNext(Fl_Widget*, void* data) {
   EditorWindow* self = static_cast<EditorWindow*>(data);
+
   if (self->lastFindString.empty()) {
     fl_alert("No previous search");
+    return;
+  }
+
+  int findPos;
+  if (self->findMatchFrom(self->textEditor->insert_position(), self->lastFindString, findPos)) {
+    self->selectMatch(findPos, self->lastFindString.size());
   } else {
-    int findPos;
-    if (self->textBuffer.search_forward(self->textEditor->insert_position(),
-                                        self->lastFindString.c_str(), &findPos)) {
-      self->textBuffer.select(findPos, findPos + self->lastFindString.size());
-      self->textEditor->insert_position(findPos + self->lastFindString.size());
-      self->textEditor->show_insert_position();
-      self->textEditor->take_focus();
-    } else {
-      fl_alert("Not Found");
-    }
+    fl_alert("Not Found");
   }
 }
 
 void EditorWindow::Replace(Fl_Widget*, void* data) {
   EditorWindow* self = static_cast<EditorWindow*>(data);
+
   const char* oldInput = fl_input("Find:");
   if (oldInput == nullptr || oldInput[0] == '\0') {
     return;
   }
+  std::string oldText = oldInput;
+
   const char* newInput = fl_input("Replace with:");
   if (newInput == nullptr) {
     return;
   }
-  int findPos;
-  std::string oldText = oldInput;
   std::string newText = newInput;
-  if (self->textBuffer.search_forward(self->textEditor->insert_position(), oldInput, &findPos)) {
+
+  self->lastFindString = oldText;
+
+  int selStart = 0;
+  int selEnd = 0;
+  self->textBuffer.selection_position(&selStart, &selEnd);
+
+  if (selEnd > selStart) {
+    char* selectedText = self->textBuffer.selection_text();
+    if (selectedText != nullptr) {
+      std::string selected = selectedText;
+      std::free(selectedText);
+
+      if (selected == oldText) {
+        self->textBuffer.replace(selStart, selEnd, newText.c_str());
+        self->selectMatch(selStart, newText.size());
+        return;
+      }
+    }
+  }
+
+  int findPos;
+  if (self->findMatchFrom(self->textEditor->insert_position(), oldText, findPos)) {
     self->textBuffer.replace(findPos, findPos + oldText.size(), newText.c_str());
-    self->textEditor->insert_position(findPos + newText.size());
-    self->textEditor->show_insert_position();
-    self->textEditor->take_focus();
-    self->textBuffer.select(findPos, findPos + newText.size());
+    self->selectMatch(findPos, newText.size());
   } else {
     fl_alert("Not Found");
   }
@@ -276,31 +345,32 @@ void EditorWindow::ReplaceAll(Fl_Widget*, void* data) {
   if (oldInput == nullptr || oldInput[0] == '\0') {
     return;
   }
+  std::string oldText = oldInput;
 
   const char* newInput = fl_input("Replace with:");
   if (newInput == nullptr) {
     return;
   }
-
-  std::string oldText = oldInput;
   std::string newText = newInput;
+
   self->lastFindString = oldText;
 
-  int startPos = 0;
-  int findPos = 0;
-  int count = 0;
-
-  while (self->textBuffer.search_forward(startPos, oldText.c_str(), &findPos)) {
-    self->textBuffer.replace(findPos, findPos + oldText.size(), newText.c_str());
-    startPos = findPos + newText.size();
-    count++;
-  }
+  int lastMatchPos = -1;
+  const int count = self->replaceAllMatches(oldText, newText, lastMatchPos);
 
   if (count == 0) {
     fl_alert("Not Found");
   } else {
-    self->textEditor->insert_position(startPos);
-    self->textEditor->show_insert_position();
-    self->textEditor->take_focus();
+    if (newText.empty()) {
+      self->textBuffer.unselect();
+      self->textEditor->insert_position(lastMatchPos);
+      self->textEditor->show_insert_position();
+      self->textEditor->take_focus();
+    } else {
+      self->selectMatch(lastMatchPos, newText.size());
+    }
+
+    std::string message = "Replaced " + std::to_string(count) + " occurrence(s).";
+    fl_alert("%s", message.c_str());
   }
 }
