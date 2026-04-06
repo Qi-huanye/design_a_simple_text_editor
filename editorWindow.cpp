@@ -145,7 +145,7 @@ void EditorWindow::applyPinkTheme() {
 
   Fl_Box* statusBoxes[] = {statusFileBox, statusCursorBox, statusStatsBox, statusModeBox};
   for (Fl_Box* box : statusBoxes) {
-    box->box(FL_FLAT_BOX);
+    box->box(FL_ROUNDED_BOX);
     box->labelfont(FL_HELVETICA_BOLD);
     box->labelsize(12);
     box->labelcolor(kMenuText);
