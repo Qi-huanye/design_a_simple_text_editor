@@ -14,13 +14,17 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
 
   textBuffer.add_modify_callback(Changed, this);
   resizable(textEditor);
+
   end();
+  updateTitle();
+  callback(Close, this);
 }
 
 void EditorWindow::open(const char* fileName) {
   if (!textBuffer.loadfile(fileName)) {
     currentFileName = fileName;
     modified = false;
+    updateTitle();
   } else {
     fl_alert("Failure to Open");
   }
@@ -30,6 +34,7 @@ void EditorWindow::save(const char* fileName) {
   if (!textBuffer.savefile(fileName)) {
     currentFileName = fileName;
     modified = false;
+    updateTitle();
   } else {
     fl_alert("Failure to Save");
   }
@@ -100,11 +105,15 @@ void EditorWindow::newFile() {
   textBuffer.text("");
   currentFileName.clear();
   modified = false;
+  updateTitle();
 }
 
 void EditorWindow::Changed(int, int, int, int, const char*, void* cbArg) {
   EditorWindow* self = static_cast<EditorWindow*>(cbArg);
-  self->modified = true;
+  if (!self->modified) {
+    self->modified = true;
+    self->updateTitle();
+  }
 }
 
 bool EditorWindow::confirmDiscardChange() {
@@ -121,5 +130,24 @@ bool EditorWindow::confirmDiscardChange() {
     } else {
       return true;
     }
+  }
+}
+
+void EditorWindow::updateTitle() {
+  std::string title;
+  if (currentFileName.empty()) {
+    title = "Untitled";
+  } else {
+    title = currentFileName;
+  }
+  if (modified)
+    title = "*" + title;
+  this->copy_label(title.c_str());
+}
+
+void EditorWindow::Close(Fl_Widget*, void* data) {
+  EditorWindow* self = static_cast<EditorWindow*>(data);
+  if (self->confirmDiscardChange()) {
+    self->hide();
   }
 }

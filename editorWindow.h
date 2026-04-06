@@ -19,13 +19,17 @@ private:
   void saveAs();
   void newFile();
   bool confirmDiscardChange();
+  void updateTitle();
+  void updateStatusBar();
   static void Open(Fl_Widget*, void*);
   static void Save(Fl_Widget*, void*);
   static void SaveAs(Fl_Widget*, void*);
   static void New(Fl_Widget*, void*);
+  static void Close(Fl_Widget*, void*);
   static void Changed(int pos, int nInserted, int nDeleted, int nRestyled, const char* deletedText,
                       void* cbArg);
   Fl_Menu_Bar* menuBar;
+  Fl_Box* statusBar;
   Fl_Text_Editor* textEditor;
   Fl_Text_Buffer textBuffer;
   std::string currentFileName;
