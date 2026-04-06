@@ -12,14 +12,14 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
   statusBar->labelsize(12);
 
   menuBar = new Fl_Menu_Bar(0, 0, this->w(), 25);
-  menuBar->add("File/Open", 0, Open, this);
-  menuBar->add("File/Save", 0, Save, this);
+  menuBar->add("File/Open", FL_COMMAND + 'o', Open, this);
+  menuBar->add("File/Save", FL_COMMAND + 's', Save, this);
   menuBar->add("File/Save As", 0, SaveAs, this);
-  menuBar->add("File/New", 0, New, this);
-  menuBar->add("Edit/Undo", 0, Undo, this);
-  menuBar->add("Edit/Cut", 0, Cut, this);
-  menuBar->add("Edit/Copy", 0, Copy, this);
-  menuBar->add("Edit/Paste", 0, Paste, this);
+  menuBar->add("File/New", FL_COMMAND + 'n', New, this);
+  menuBar->add("Edit/Undo", FL_COMMAND + 'z', Undo, this);
+  menuBar->add("Edit/Cut", FL_COMMAND + 'x', Cut, this);
+  menuBar->add("Edit/Copy", FL_COMMAND + 'c', Copy, this);
+  menuBar->add("Edit/Paste", FL_COMMAND + 'v', Paste, this);
 
   textBuffer.add_modify_callback(Changed, this);
   resizable(textEditor);
@@ -183,7 +183,7 @@ void EditorWindow::updateStatusBar() {
   statusBar->copy_label(title.c_str());
 }
 
-void EditorWindow::Undo(Fl_Widget*, void* data){
+void EditorWindow::Undo(Fl_Widget*, void* data) {
   EditorWindow* self = static_cast<EditorWindow*>(data);
   Fl_Text_Editor::kf_undo(0, self->textEditor);
 }
