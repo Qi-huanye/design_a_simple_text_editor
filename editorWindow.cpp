@@ -56,6 +56,7 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
   menuBar->add("Edit/Paste", FL_COMMAND + 'v', Paste, this);
   menuBar->add("Edit/Select All", FL_COMMAND + 'a', SelectAll, this);
   menuBar->add("Edit/Delete Current Line", FL_COMMAND + 'd', DeleteCurrentLine, this);
+  menuBar->add("Edit/Duplicate Current Line", 0, DuplicateCurrentLine, this);
   menuBar->add("Edit/Go To Line", FL_COMMAND + 'g', GoToLine, this);
   menuBar->add("Edit/Match Case", 0, ToggleMatchCase, this, FL_MENU_TOGGLE);
   menuBar->add("Edit/Find", FL_COMMAND + 'f', Find, this);
@@ -367,6 +368,38 @@ void EditorWindow::deleteCurrentLine() {
   textEditor->take_focus();
 }
 
+void EditorWindow::duplicateCurrentLine() {
+  const int bufferLength = textBuffer.length();
+  if (bufferLength == 0) {
+    fl_alert("Buffer is empty");
+    return;
+  }
+
+  const int cursorPos = textEditor->insert_position();
+  const int lineStart = textBuffer.line_start(cursorPos);
+  const int lineEnd = textBuffer.line_end(cursorPos);
+  char* lineTextPtr = textBuffer.text_range(lineStart, lineEnd);
+  if (lineTextPtr == nullptr) {
+    fl_alert("Failed to duplicate line");
+    return;
+  }
+
+  std::string lineText = lineTextPtr;
+  std::free(lineTextPtr);
+
+  const bool hasTrailingNewline = lineEnd < bufferLength;
+  std::string insertedText = lineText;
+  if (hasTrailingNewline) {
+    insertedText += "\n";
+    textBuffer.insert(lineEnd + 1, insertedText.c_str());
+    selectMatch(lineEnd + 1, lineText.size());
+  } else {
+    insertedText.insert(0, "\n");
+    textBuffer.insert(lineEnd, insertedText.c_str());
+    selectMatch(lineEnd + 1, lineText.size());
+  }
+}
+
 void EditorWindow::toggleWordWrap() {
   wordWrapEnabled = !wordWrapEnabled;
   if (wordWrapEnabled) {
@@ -466,6 +499,11 @@ void EditorWindow::GoToLine(Fl_Widget*, void* data) {
 void EditorWindow::DeleteCurrentLine(Fl_Widget*, void* data) {
   EditorWindow* self = static_cast<EditorWindow*>(data);
   self->deleteCurrentLine();
+}
+
+void EditorWindow::DuplicateCurrentLine(Fl_Widget*, void* data) {
+  EditorWindow* self = static_cast<EditorWindow*>(data);
+  self->duplicateCurrentLine();
 }
 
 void EditorWindow::ToggleWordWrap(Fl_Widget*, void* data) {

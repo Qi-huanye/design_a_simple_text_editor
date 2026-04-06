@@ -33,6 +33,7 @@ private:
   void selectAllText();
   bool goToLineNumber(int lineNumber);
   void deleteCurrentLine();
+  void duplicateCurrentLine();
   void toggleLineNumbers();
   void toggleWordWrap();
   void toggleMatchCase();
@@ -55,6 +56,7 @@ private:
   static void SelectAll(Fl_Widget*, void*);
   static void GoToLine(Fl_Widget*, void*);
   static void DeleteCurrentLine(Fl_Widget*, void*);
+  static void DuplicateCurrentLine(Fl_Widget*, void*);
   static void ToggleLineNumbers(Fl_Widget*, void*);
   static void ToggleWordWrap(Fl_Widget*, void*);
   static void ToggleMatchCase(Fl_Widget*, void*);
