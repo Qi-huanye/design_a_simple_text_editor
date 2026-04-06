@@ -17,8 +17,10 @@ private:
   void open(const char* fileName);
   void save(const char* fileName);
   void save();
+  void saveAs();
   static void Open(Fl_Widget*, void*);
   static void Save(Fl_Widget*, void*);
+  static void SaveAs(Fl_Widget*, void*);
   Fl_Menu_Bar* menuBar;
   Fl_Text_Editor* textEditor;
   Fl_Text_Buffer textBuffer;
