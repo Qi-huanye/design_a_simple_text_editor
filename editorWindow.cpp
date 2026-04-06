@@ -1,8 +1,8 @@
 #include "editorWindow.h"
 #include <FL/Enumerations.H>
 #include <FL/Fl_Native_File_Chooser.H>
-#include <FL/fl_draw.H>
 #include <FL/fl_ask.H>
+#include <FL/fl_draw.H>
 #include <cstdlib>
 
 namespace {
@@ -32,30 +32,29 @@ const Fl_Color kStatusFileDirtyBg = makeColor(234, 120, 162);
 const Fl_Color kStatusCursorBg = makeColor(255, 242, 247);
 const Fl_Color kStatusStatsBg = makeColor(250, 227, 236);
 const Fl_Color kStatusModeBg = makeColor(247, 216, 230);
-}
+} // namespace
 
 class EditorTextWidget : public Fl_Text_Editor {
 public:
   EditorTextWidget(int x, int y, int w, int h, EditorWindow* owner)
-      : Fl_Text_Editor(x, y, w, h), owner(owner) {
-  }
+      : Fl_Text_Editor(x, y, w, h), owner(owner) {}
 
   int handle(int event) override {
     const int handled = Fl_Text_Editor::handle(event);
 
     switch (event) {
-      case FL_PUSH:
-      case FL_DRAG:
-      case FL_RELEASE:
-      case FL_KEYDOWN:
-      case FL_KEYUP:
-      case FL_PASTE:
-      case FL_FOCUS:
-      case FL_UNFOCUS:
-        owner->updateStatusBar();
-        break;
-      default:
-        break;
+    case FL_PUSH:
+    case FL_DRAG:
+    case FL_RELEASE:
+    case FL_KEYDOWN:
+    case FL_KEYUP:
+    case FL_PASTE:
+    case FL_FOCUS:
+    case FL_UNFOCUS:
+      owner->updateStatusBar();
+      break;
+    default:
+      break;
     }
 
     return handled;
@@ -104,7 +103,7 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
   menuBar->add("View/Word Wrap", 0, ToggleWordWrap, this, FL_MENU_TOGGLE);
 
   textBuffer.add_modify_callback(Changed, this);
-  textEditor->linenumber_width(48);
+  textEditor->linenumber_width(28);
   resizable(textEditor);
   applyPinkTheme();
   layoutWidgets(w, h);
@@ -115,9 +114,7 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
   callback(Close, this);
 }
 
-void EditorWindow::openFile(const char* fileName) {
-  open(fileName);
-}
+void EditorWindow::openFile(const char* fileName) { open(fileName); }
 
 void EditorWindow::resize(int x, int y, int w, int h) {
   Fl_Double_Window::resize(x, y, w, h);
@@ -171,15 +168,16 @@ void EditorWindow::layoutWidgets(int width, int height) {
   const int editorY = kMenuHeight + kInnerGap;
   const int editorWidth = width - 2 * kOuterPadding;
   const int editorHeight = statusY - editorY - kInnerGap;
-  textEditor->resize(editorX, editorY, editorWidth > 0 ? editorWidth : 0, editorHeight > 0 ? editorHeight : 0);
+  textEditor->resize(editorX, editorY, editorWidth > 0 ? editorWidth : 0,
+                     editorHeight > 0 ? editorHeight : 0);
 
   const int segmentY = statusY + 8;
   const int segmentHeight = kStatusHeight - 16;
   const int availableWidth = width - 2 * kOuterPadding - 3 * kInnerGap;
   const int safeWidth = availableWidth > 0 ? availableWidth : 0;
-  const int fileWidth = safeWidth * 38 / 100;
-  const int cursorWidth = safeWidth * 18 / 100;
-  const int statsWidth = safeWidth * 20 / 100;
+  const int fileWidth = safeWidth * 34 / 100;
+  const int cursorWidth = safeWidth * 16 / 100;
+  const int statsWidth = safeWidth * 14 / 100;
   const int modeWidth = safeWidth - fileWidth - cursorWidth - statsWidth;
 
   int segmentX = kOuterPadding;
@@ -337,14 +335,43 @@ void EditorWindow::Close(Fl_Widget*, void* data) {
 }
 
 void EditorWindow::updateStatusBar() {
-  const std::string fileLabel = std::string(modified ? "Modified  " : "Saved  ") + displayFileName();
-  const std::string cursorLabel =
-      "Ln " + std::to_string(currentLineNumber()) + "  Col " + std::to_string(currentColumnNumber());
-  const std::string statsLabel =
-      std::to_string(lineCount()) + " lines  " + std::to_string(textBuffer.length()) + " chars";
-  std::string modeLabel = lineNumbersEnabled ? "Lines On" : "Lines Off";
-  modeLabel += wordWrapEnabled ? "  |  Wrap On" : "  |  Wrap Off";
-  modeLabel += matchCaseEnabled ? "  |  Match Case" : "  |  Ignore Case";
+  const bool compactFile = statusFileBox->w() < 240;
+  const bool compactCursor = statusCursorBox->w() < 150;
+  const bool compactStats = statusStatsBox->w() < 140;
+  const bool compactMode = statusModeBox->w() < 320;
+
+  std::string fileLabel = modified ? "Edited" : "Saved";
+  if (!compactFile) {
+    fileLabel += "  " + displayFileName();
+  }
+
+  std::string cursorLabel;
+  if (compactCursor) {
+    cursorLabel = "L" + std::to_string(currentLineNumber()) + " C" +
+                  std::to_string(currentColumnNumber());
+  } else {
+    cursorLabel = "Ln " + std::to_string(currentLineNumber()) + "  Col " +
+                  std::to_string(currentColumnNumber());
+  }
+
+  std::string statsLabel;
+  if (compactStats) {
+    statsLabel = std::to_string(lineCount()) + "L  " + std::to_string(textBuffer.length()) + "C";
+  } else {
+    statsLabel = std::to_string(lineCount()) + " lines  " + std::to_string(textBuffer.length()) +
+                 " chars";
+  }
+
+  std::string modeLabel;
+  if (compactMode) {
+    modeLabel = lineNumbersEnabled ? "Nums On" : "Nums Off";
+    modeLabel += wordWrapEnabled ? " | Wrap" : " | NoWrap";
+    modeLabel += matchCaseEnabled ? " | Case" : " | NoCase";
+  } else {
+    modeLabel = lineNumbersEnabled ? "Line Nums On" : "Line Nums Off";
+    modeLabel += wordWrapEnabled ? "  |  Wrap On" : "  |  Wrap Off";
+    modeLabel += matchCaseEnabled ? "  |  Match Case" : "  |  Ignore Case";
+  }
 
   statusFileBox->color(modified ? kStatusFileDirtyBg : kStatusFileBg);
   statusFileBox->labelcolor(modified ? FL_WHITE : kMenuText);
@@ -605,7 +632,8 @@ void EditorWindow::GoToLine(Fl_Widget*, void* data) {
   char* endPtr = nullptr;
   const long lineNumber = std::strtol(input, &endPtr, 10);
   if (endPtr == input || *endPtr != '\0' || lineNumber < 1 || lineNumber > self->lineCount()) {
-    std::string message = "Line number must be between 1 and " + std::to_string(self->lineCount()) + ".";
+    std::string message =
+        "Line number must be between 1 and " + std::to_string(self->lineCount()) + ".";
     fl_alert("%s", message.c_str());
     return;
   }
@@ -681,7 +709,8 @@ void EditorWindow::FindPrevious(Fl_Widget*, void* data) {
     return;
   }
 
-  const int startPos = self->textEditor->insert_position() - static_cast<int>(self->lastFindString.size()) - 1;
+  const int startPos =
+      self->textEditor->insert_position() - static_cast<int>(self->lastFindString.size()) - 1;
   int findPos;
   if (self->findPreviousMatchFrom(startPos, self->lastFindString, findPos)) {
     self->selectMatch(findPos, self->lastFindString.size());
