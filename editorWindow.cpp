@@ -23,6 +23,7 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
   menuBar->add("Edit/Find", FL_COMMAND + 'f', Find, this);
   menuBar->add("Edit/Find Next", 0, FindNext, this);
   menuBar->add("Edit/Replace", 0, Replace, this);
+  menuBar->add("Edit/Replace All", 0, ReplaceAll, this);
 
   textBuffer.add_modify_callback(Changed, this);
   resizable(textEditor);
@@ -265,5 +266,41 @@ void EditorWindow::Replace(Fl_Widget*, void* data) {
     self->textBuffer.select(findPos, findPos + newText.size());
   } else {
     fl_alert("Not Found");
+  }
+}
+
+void EditorWindow::ReplaceAll(Fl_Widget*, void* data) {
+  EditorWindow* self = static_cast<EditorWindow*>(data);
+
+  const char* oldInput = fl_input("Find:");
+  if (oldInput == nullptr || oldInput[0] == '\0') {
+    return;
+  }
+
+  const char* newInput = fl_input("Replace with:");
+  if (newInput == nullptr) {
+    return;
+  }
+
+  std::string oldText = oldInput;
+  std::string newText = newInput;
+  self->lastFindString = oldText;
+
+  int startPos = 0;
+  int findPos = 0;
+  int count = 0;
+
+  while (self->textBuffer.search_forward(startPos, oldText.c_str(), &findPos)) {
+    self->textBuffer.replace(findPos, findPos + oldText.size(), newText.c_str());
+    startPos = findPos + newText.size();
+    count++;
+  }
+
+  if (count == 0) {
+    fl_alert("Not Found");
+  } else {
+    self->textEditor->insert_position(startPos);
+    self->textEditor->show_insert_position();
+    self->textEditor->take_focus();
   }
 }

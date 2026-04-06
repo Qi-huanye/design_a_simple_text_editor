@@ -36,6 +36,7 @@ private:
   static void Find(Fl_Widget*, void*);
   static void FindNext(Fl_Widget*, void*);
   static void Replace(Fl_Widget*, void*);
+  static void ReplaceAll(Fl_Widget*, void*);
   Fl_Menu_Bar* menuBar;
   Fl_Box* statusBar;
   Fl_Text_Editor* textEditor;
