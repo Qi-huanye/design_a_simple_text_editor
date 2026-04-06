@@ -16,6 +16,10 @@ EditorWindow::EditorWindow(int w, int h, const char* title) : Fl_Double_Window(w
   menuBar->add("File/Save", 0, Save, this);
   menuBar->add("File/Save As", 0, SaveAs, this);
   menuBar->add("File/New", 0, New, this);
+  menuBar->add("Edit/Undo", 0, Undo, this);
+  menuBar->add("Edit/Cut", 0, Cut, this);
+  menuBar->add("Edit/Copy", 0, Copy, this);
+  menuBar->add("Edit/Paste", 0, Paste, this);
 
   textBuffer.add_modify_callback(Changed, this);
   resizable(textEditor);
@@ -177,4 +181,24 @@ void EditorWindow::updateStatusBar() {
   }
 
   statusBar->copy_label(title.c_str());
+}
+
+void EditorWindow::Undo(Fl_Widget*, void* data){
+  EditorWindow* self = static_cast<EditorWindow*>(data);
+  Fl_Text_Editor::kf_undo(0, self->textEditor);
+}
+
+void EditorWindow::Cut(Fl_Widget*, void* data) {
+  EditorWindow* self = static_cast<EditorWindow*>(data);
+  Fl_Text_Editor::kf_cut(0, self->textEditor);
+}
+
+void EditorWindow::Copy(Fl_Widget*, void* data) {
+  EditorWindow* self = static_cast<EditorWindow*>(data);
+  Fl_Text_Editor::kf_copy(0, self->textEditor);
+}
+
+void EditorWindow::Paste(Fl_Widget*, void* data) {
+  EditorWindow* self = static_cast<EditorWindow*>(data);
+  Fl_Text_Editor::kf_paste(0, self->textEditor);
 }
